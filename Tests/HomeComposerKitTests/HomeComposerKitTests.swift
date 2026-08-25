@@ -1,8 +1,22 @@
-import Testing
+import XCTest
 @testable import HomeComposerKit
 
-@Test func example() async throws {
-    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-    // Swift Testing Documentation
-    // https://developer.apple.com/documentation/testing
+final class HomeComposerKitTests: XCTestCase {
+
+    func testMockHomePageHasSections() {
+        let homePage = MockHomePage.sample
+
+        XCTAssertEqual(homePage.id, "home-001")
+        XCTAssertEqual(homePage.version, "1.0")
+        XCTAssertEqual(homePage.title, "Discover")
+        XCTAssertFalse(homePage.sections.isEmpty)
+    }
+
+    func testMockSectionSamplesArePopulated() {
+        XCTAssertFalse(MockHomePage.sampleBannerSection.banners.isEmpty)
+        XCTAssertFalse(MockHomePage.sampleCategorySection.categories.isEmpty)
+        XCTAssertFalse(MockHomePage.sampleProductSection.products.isEmpty)
+        XCTAssertFalse(MockHomePage.sampleLiveSection.streams.isEmpty)
+        XCTAssertFalse(MockHomePage.sampleSocialSection.posts.isEmpty)
+    }
 }
