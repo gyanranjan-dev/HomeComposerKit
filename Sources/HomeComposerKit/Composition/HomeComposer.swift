@@ -2,8 +2,14 @@ import Foundation
 
 /// Converts a `HomePage` configuration into an ordered list of renderable sections.
 ///
-/// The composer is domain-agnostic: it filters, sorts, and maps sections using
-/// type and configuration only. It does not perform networking or UI work.
+/// The composer is domain-agnostic and production-safe:
+/// - disabled / empty-id sections are excluded
+/// - duplicate section ids keep the first occurrence only
+/// - negative positions are skipped
+/// - unknown section types are preserved for host/registry extension
+/// - missing content never crashes composition
+///
+/// It does not perform networking or UI work.
 public struct HomeComposer: Sendable {
 
     public init() {}
@@ -13,17 +19,87 @@ public struct HomeComposer: Sendable {
     /// - Parameters:
     ///   - homePage: The configured home page to compose.
     ///   - contentBySectionID: Optional section payloads keyed by section `id`.
-    /// - Returns: Enabled sections sorted by `order`. When two sections share
+    ///   - diagnosticReporter: Optional host reporter for skipped/invalid sections.
+    /// - Returns: Safely filtered sections sorted by `order`. When two sections share
     ///   the same order, their relative position from the original API array is preserved.
-    ///   Empty content does not prevent a section from being returned.
     public func compose(
         _ homePage: HomePage,
-        contentBySectionID: [String: HomeSectionContent] = [:]
+        contentBySectionID: [String: HomeSectionContent] = [:],
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) -> [ComposedHomeSection] {
-        homePage.sections
+        var seenIDs = Set<String>()
+
+        return homePage.sections
             .enumerated()
-            .filter { _, section in
-                section.canCompose
+            .compactMap { index, section -> (offset: Int, element: HomeSection)? in
+                let trimmedID = section.id.trimmingCharacters(in: .whitespacesAndNewlines)
+
+                guard section.isEnabled else {
+                    return nil
+                }
+
+                guard !trimmedID.isEmpty else {
+                    diagnosticReporter.report(
+                        HomeDiagnostic(
+                            severity: .error,
+                            code: .emptySectionID,
+                            message: "Skipping section with empty id during composition.",
+                            sectionID: section.id
+                        )
+                    )
+                    return nil
+                }
+
+                if seenIDs.contains(trimmedID) {
+                    diagnosticReporter.report(
+                        HomeDiagnostic(
+                            severity: .error,
+                            code: .duplicateSectionID,
+                            message: "Skipping duplicate section id '\(trimmedID)' during composition.",
+                            sectionID: trimmedID
+                        )
+                    )
+                    return nil
+                }
+
+                if section.order < 0 {
+                    diagnosticReporter.report(
+                        HomeDiagnostic(
+                            severity: .error,
+                            code: .invalidSectionPosition,
+                            message: "Skipping section with invalid order \(section.order).",
+                            sectionID: section.id
+                        )
+                    )
+                    return nil
+                }
+
+                if let configuration = section.configuration,
+                   hasInvalidConfiguration(configuration) {
+                    diagnosticReporter.report(
+                        HomeDiagnostic(
+                            severity: .error,
+                            code: .invalidSectionConfiguration,
+                            message: "Skipping section with invalid configuration values.",
+                            sectionID: section.id
+                        )
+                    )
+                    return nil
+                }
+
+                if !section.type.isKnown {
+                    diagnosticReporter.report(
+                        HomeDiagnostic(
+                            severity: .warning,
+                            code: .unsupportedSectionType,
+                            message: "Composing unsupported section type '\(section.type.rawValue)'.",
+                            sectionID: section.id
+                        )
+                    )
+                }
+
+                seenIDs.insert(trimmedID)
+                return (offset: index, element: section)
             }
             .sorted { lhs, rhs in
                 if lhs.element.order != rhs.element.order {
@@ -37,5 +113,12 @@ public struct HomeComposer: Sendable {
                     content: contentBySectionID[section.id]
                 )
             }
+    }
+
+    private func hasInvalidConfiguration(_ configuration: SectionConfiguration) -> Bool {
+        if let limit = configuration.limit, limit < 0 { return true }
+        if let columns = configuration.columns, columns < 0 { return true }
+        if let spacing = configuration.spacing, spacing < 0 { return true }
+        return false
     }
 }

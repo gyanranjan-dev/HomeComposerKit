@@ -2,17 +2,17 @@ import Foundation
 
 /// Builds a ``HomeRenderContext`` from host-provided JSON, providers, or models.
 ///
-/// This is the primary Integration-layer entry point between the host app and
-/// HomeComposerKit. It reuses ``HomePageDecoder`` and does not perform network I/O.
+/// Primary Integration-layer entry point. Reuses ``HomePageDecoder`` and never
+/// performs network I/O.
 ///
-/// Typical host usage:
+/// Recommended host flow:
 /// ```swift
-/// // Host networking returns Data…
 /// let context = try HomeRenderContextBuilder().makeContext(
 ///     from: data,
 ///     contentBySectionID: content
 /// )
-/// let sections = context.compose()
+/// let validation = context.validate(diagnosticReporter: hostReporter)
+/// let sections = context.compose(diagnosticReporter: hostReporter)
 /// let view = HomeComposerView(context: context, rendererRegistry: registry)
 /// ```
 public struct HomeRenderContextBuilder: Sendable {
@@ -31,64 +31,90 @@ public struct HomeRenderContextBuilder: Sendable {
     /// - Parameters:
     ///   - data: UTF-8 JSON bytes from the host networking layer.
     ///   - contentBySectionID: Section payloads keyed by section `id`.
+    ///   - validate: When `true`, runs ``HomePageValidator`` and reports diagnostics.
+    ///   - diagnosticReporter: Host reporter used when `validate` is `true`.
     /// - Returns: A context ready for composition and ``HomeComposerView``.
     public func makeContext(
         from data: Data,
-        contentBySectionID: [String: HomeSectionContent] = [:]
+        contentBySectionID: [String: HomeSectionContent] = [:],
+        validate: Bool = false,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) throws -> HomeRenderContext {
         let homePage = try decoder.decode(data)
-        return HomeRenderContext(
+        let context = HomeRenderContext(
             homePage: homePage,
             contentBySectionID: contentBySectionID
         )
+        if validate {
+            context.validate(diagnosticReporter: diagnosticReporter)
+        }
+        return context
     }
 
     /// Decodes a JSON string and pairs it with section content.
     public func makeContext(
         from json: String,
-        contentBySectionID: [String: HomeSectionContent] = [:]
+        contentBySectionID: [String: HomeSectionContent] = [:],
+        validate: Bool = false,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) throws -> HomeRenderContext {
         let homePage = try decoder.decode(json)
-        return HomeRenderContext(
+        let context = HomeRenderContext(
             homePage: homePage,
             contentBySectionID: contentBySectionID
         )
+        if validate {
+            context.validate(diagnosticReporter: diagnosticReporter)
+        }
+        return context
     }
 
     /// Creates a context from an already-decoded home page.
     public func makeContext(
         homePage: HomePage,
-        contentBySectionID: [String: HomeSectionContent] = [:]
+        contentBySectionID: [String: HomeSectionContent] = [:],
+        validate: Bool = false,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) -> HomeRenderContext {
-        HomeRenderContext(
+        let context = HomeRenderContext(
             homePage: homePage,
             contentBySectionID: contentBySectionID
         )
+        if validate {
+            context.validate(diagnosticReporter: diagnosticReporter)
+        }
+        return context
     }
 
     /// Builds a context from a host ``HomePageProviding`` implementation.
     public func makeContext(
         from provider: some HomePageProviding,
-        contentBySectionID: [String: HomeSectionContent] = [:]
+        contentBySectionID: [String: HomeSectionContent] = [:],
+        validate: Bool = false,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) throws -> HomeRenderContext {
         let homePage = try provider.makeHomePage()
         return makeContext(
             homePage: homePage,
-            contentBySectionID: contentBySectionID
+            contentBySectionID: contentBySectionID,
+            validate: validate,
+            diagnosticReporter: diagnosticReporter
         )
     }
 
     /// Builds a context from a host ``HomePageDataProviding`` implementation.
-    ///
-    /// Decoding is delegated to ``HomePageDecoder`` (no duplicated decode logic).
     public func makeContext(
         fromDataProvider provider: some HomePageDataProviding,
-        contentBySectionID: [String: HomeSectionContent] = [:]
+        contentBySectionID: [String: HomeSectionContent] = [:],
+        validate: Bool = false,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) throws -> HomeRenderContext {
         let data = try provider.makeHomePageData()
         return try makeContext(
             from: data,
-            contentBySectionID: contentBySectionID
+            contentBySectionID: contentBySectionID,
+            validate: validate,
+            diagnosticReporter: diagnosticReporter
         )
     }
 }

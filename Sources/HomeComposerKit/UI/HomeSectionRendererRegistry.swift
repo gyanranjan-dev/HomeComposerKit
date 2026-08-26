@@ -3,8 +3,11 @@ import SwiftUI
 /// Stores section-type → SwiftUI renderer mappings.
 ///
 /// Built-in renderers are registered by ``makeDefault()``. Host apps can
-/// register additional renderers for types such as `.custom` without
-/// modifying framework internals.
+/// register additional renderers for types such as `.custom` or
+/// `.unknown("flash_sale_v2")` without modifying framework internals.
+///
+/// Unregistered section types (including unknown backend types) safely render
+/// as `EmptyView` — they never crash the host application.
 @MainActor
 public struct HomeSectionRendererRegistry {
 

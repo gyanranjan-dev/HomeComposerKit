@@ -10,8 +10,8 @@ public protocol HomeSectionComposable {
 }
 
 extension HomeSection: HomeSectionComposable {
-    /// Enabled sections are eligible for composition.
+    /// Enabled sections with a non-empty id are eligible for composition.
     public var canCompose: Bool {
-        isEnabled
+        isEnabled && !id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }

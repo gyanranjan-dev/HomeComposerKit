@@ -8,9 +8,11 @@ import Foundation
 ///         ↓
 ///   JSON Data / HomePage
 ///         ↓
-/// HomeRenderContextBuilder  (decode + attach content)
+/// Decode (HomePageDecoder) — unknown section types preserved
 ///         ↓
-///   HomeRenderContext
+/// Validate (optional HomePageValidator + diagnostics)
+///         ↓
+/// HomeRenderContext
 ///         ↓
 /// HomeComposer → [ComposedHomeSection]
 ///         ↓
@@ -39,13 +41,32 @@ public struct HomeRenderContext: Sendable {
         self.contentBySectionID = contentBySectionID
     }
 
+    /// Validates the decoded home page and optionally reports diagnostics.
+    ///
+    /// Validation is optional and never throws. Existing callers that skip
+    /// validation remain unaffected.
+    @discardableResult
+    public func validate(
+        using validator: HomePageValidator = HomePageValidator(),
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
+    ) -> HomeValidationResult {
+        let result = validator.validate(homePage)
+        diagnosticReporter.report(result)
+        return result
+    }
+
     /// Composes renderable sections using the injected content map.
     ///
     /// Presentation stays outside this method; callers pass the result (or this
     /// context) into ``HomeComposerView``.
     public func compose(
-        using composer: HomeComposer = HomeComposer()
+        using composer: HomeComposer = HomeComposer(),
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) -> [ComposedHomeSection] {
-        composer.compose(homePage, contentBySectionID: contentBySectionID)
+        composer.compose(
+            homePage,
+            contentBySectionID: contentBySectionID,
+            diagnosticReporter: diagnosticReporter
+        )
     }
 }
