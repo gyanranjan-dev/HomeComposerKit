@@ -1,7 +1,7 @@
 import Foundation
 
 /// A product displayed in home page sections.
-public struct Product: Codable, Identifiable, Sendable {
+public struct Product: Codable, Identifiable, Equatable, Sendable {
 
     public let id: String
     public let name: String

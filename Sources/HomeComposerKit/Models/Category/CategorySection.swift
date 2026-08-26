@@ -1,7 +1,7 @@
 import Foundation
 
 /// A product category displayed in home page sections.
-public struct Category: Codable, Identifiable, Sendable {
+public struct Category: Codable, Identifiable, Equatable, Sendable {
 
     public let id: String
     public let name: String
@@ -19,7 +19,7 @@ public struct Category: Codable, Identifiable, Sendable {
 }
 
 /// A categories section containing a list of categories.
-public struct CategorySection: Codable, Sendable {
+public struct CategorySection: Codable, Equatable, Sendable {
 
     public let categories: [Category]
 

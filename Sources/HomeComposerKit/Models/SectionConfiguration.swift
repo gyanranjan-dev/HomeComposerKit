@@ -1,7 +1,7 @@
 import Foundation
 
 /// Layout and display options for a home section.
-public struct SectionConfiguration: Codable, Sendable {
+public struct SectionConfiguration: Codable, Equatable, Sendable {
 
     public let layout: String?
     public let limit: Int?

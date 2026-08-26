@@ -1,7 +1,7 @@
 import Foundation
 
 /// A social post displayed in a home page section.
-public struct SocialPost: Codable, Identifiable, Sendable {
+public struct SocialPost: Codable, Identifiable, Equatable, Sendable {
 
     public let id: String
     public let author: String
@@ -22,7 +22,7 @@ public struct SocialPost: Codable, Identifiable, Sendable {
 }
 
 /// A social feed section containing a list of social posts.
-public struct SocialSection: Codable, Sendable {
+public struct SocialSection: Codable, Equatable, Sendable {
 
     public let posts: [SocialPost]
 

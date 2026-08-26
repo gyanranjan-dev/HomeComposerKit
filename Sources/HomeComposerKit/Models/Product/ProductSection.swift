@@ -1,7 +1,7 @@
 import Foundation
 
 /// A products section containing a list of products.
-public struct ProductSection: Codable, Sendable {
+public struct ProductSection: Codable, Equatable, Sendable {
 
     public let products: [Product]
 

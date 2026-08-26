@@ -1,7 +1,7 @@
 import Foundation
 
 /// A live stream item displayed in a home page section.
-public struct LiveStream: Codable, Identifiable, Sendable {
+public struct LiveStream: Codable, Identifiable, Equatable, Sendable {
 
     public let id: String
     public let title: String
@@ -25,7 +25,7 @@ public struct LiveStream: Codable, Identifiable, Sendable {
 }
 
 /// A live stream section containing a list of live streams.
-public struct LiveSection: Codable, Sendable {
+public struct LiveSection: Codable, Equatable, Sendable {
 
     public let streams: [LiveStream]
 

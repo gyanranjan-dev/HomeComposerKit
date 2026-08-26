@@ -1,7 +1,7 @@
 import Foundation
 
 /// The tap action associated with a banner.
-public struct BannerAction: Codable, Sendable {
+public struct BannerAction: Codable, Equatable, Sendable {
 
     public let title: String?
     public let destination: String
@@ -16,7 +16,7 @@ public struct BannerAction: Codable, Sendable {
 }
 
 /// A promotional banner displayed in a home page section.
-public struct Banner: Codable, Identifiable, Sendable {
+public struct Banner: Codable, Identifiable, Equatable, Sendable {
 
     public let id: String
     public let title: String?
@@ -40,7 +40,7 @@ public struct Banner: Codable, Identifiable, Sendable {
 }
 
 /// A banner carousel section containing a list of banners.
-public struct BannerSection: Codable, Sendable {
+public struct BannerSection: Codable, Equatable, Sendable {
 
     public let banners: [Banner]
 
