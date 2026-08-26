@@ -1,14 +1,17 @@
 import SwiftUI
 
-/// Renders a composed home section as a SwiftUI view.
+/// Resolves a `ComposedHomeSection` through a ``HomeSectionRendererRegistry``.
 ///
-/// Implementations stay focused on presentation. Business rules and
-/// composition belong in the model and composition layers.
-public protocol HomeSectionRenderer {
-    /// Whether this renderer handles the given section type.
-    func canRender(_ type: HomeSectionType) -> Bool
+/// Built-in mappings live in the default registry. Host apps should register
+/// custom section types on a registry instance instead of modifying this type.
+@MainActor
+enum HomeSectionRenderer {
 
-    /// Builds a SwiftUI view for the composed section.
-    @MainActor
-    func render(_ section: ComposedHomeSection) -> AnyView
+    /// Builds the SwiftUI representation for a composed section.
+    static func view(
+        for section: ComposedHomeSection,
+        in registry: HomeSectionRendererRegistry
+    ) -> AnyView {
+        registry.view(for: section)
+    }
 }

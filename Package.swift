@@ -7,6 +7,8 @@ let package = Package(
     name: "HomeComposerKit",
     platforms: [
         .iOS(.v16),
+        // macOS is retained so `swift test` can run on developer Macs.
+        // The SwiftUI layer targets iOS; some UIKit-backed styles are iOS-first.
         .macOS(.v13)
     ],
     products: [

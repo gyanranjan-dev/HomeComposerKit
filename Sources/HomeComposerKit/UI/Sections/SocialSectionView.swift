@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Horizontal social post cards.
+/// Social content section using a clean card layout. No social API integration.
 public struct SocialSectionView: View {
     let section: ComposedHomeSection
 
@@ -9,21 +9,33 @@ public struct SocialSectionView: View {
     }
 
     private var posts: [SocialPost] {
-        if case .social(let payload) = section.content {
-            return payload.posts
+        guard case .social(let payload) = section.content else { return [] }
+        let items = payload.posts
+        if let limit = section.configuration?.limit {
+            return Array(items.prefix(limit))
         }
-        return []
+        return items
+    }
+
+    private var spacing: CGFloat {
+        CGFloat(section.configuration?.spacing ?? 12)
     }
 
     public var body: some View {
-        HomeSectionContainer(title: section.title) {
+        VStack(alignment: .leading, spacing: spacing) {
+            HomeSectionHeaderView(
+                title: section.title,
+                showTitle: shouldShowTitle
+            )
+
             if posts.isEmpty {
                 Text("No posts")
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
+                    .accessibilityLabel("No social posts available")
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
+                    LazyHStack(spacing: spacing) {
                         ForEach(posts) { post in
                             socialCard(post)
                         }
@@ -32,6 +44,10 @@ public struct SocialSectionView: View {
                 }
             }
         }
+    }
+
+    private var shouldShowTitle: Bool {
+        !(section.title ?? "").isEmpty
     }
 
     private func socialCard(_ post: SocialPost) -> some View {
@@ -55,16 +71,14 @@ public struct SocialSectionView: View {
         .background(HomeUIColor.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
-    }
-}
-
-struct SocialSectionRenderer: HomeSectionRenderer {
-    func canRender(_ type: HomeSectionType) -> Bool {
-        type == .social
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(accessibilityLabel(for: post)))
     }
 
-    @MainActor
-    func render(_ section: ComposedHomeSection) -> AnyView {
-        AnyView(SocialSectionView(section: section))
+    private func accessibilityLabel(for post: SocialPost) -> String {
+        if let content = post.content {
+            return "\(post.author): \(content)"
+        }
+        return post.author
     }
 }

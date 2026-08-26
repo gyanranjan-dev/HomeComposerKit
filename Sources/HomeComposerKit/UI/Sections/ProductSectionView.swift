@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Horizontal scrolling product cards for a standard products section.
+/// Product strip used for products, popular products, and favorites.
 public struct ProductSectionView: View {
     let section: ComposedHomeSection
 
@@ -9,31 +9,58 @@ public struct ProductSectionView: View {
     }
 
     private var products: [Product] {
-        if case .products(let payload) = section.content {
-            return payload.products
+        let items: [Product]
+        switch section.content {
+        case .products(let payload),
+             .popularProducts(let payload),
+             .favoriteProducts(let payload):
+            items = payload.products
+        default:
+            items = []
         }
-        return []
+
+        if let limit = section.configuration?.limit {
+            return Array(items.prefix(limit))
+        }
+        return items
+    }
+
+    private var spacing: CGFloat {
+        CGFloat(section.configuration?.spacing ?? 12)
+    }
+
+    private var usesGridLayout: Bool {
+        section.configuration?.layout?.lowercased() == "grid"
     }
 
     public var body: some View {
-        ProductStripSectionView(title: section.title, products: products)
-    }
-}
+        VStack(alignment: .leading, spacing: spacing) {
+            HomeSectionHeaderView(
+                title: section.title,
+                showTitle: shouldShowTitle,
+                showSeeAll: false
+            )
 
-/// Shared horizontal product strip used by products / favorites / popular.
-struct ProductStripSectionView: View {
-    let title: String?
-    let products: [Product]
-
-    var body: some View {
-        HomeSectionContainer(title: title) {
             if products.isEmpty {
                 Text("No products")
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
+                    .accessibilityLabel("No products available")
+            } else if usesGridLayout {
+                LazyVGrid(
+                    columns: [
+                        GridItem(.adaptive(minimum: 148), spacing: spacing)
+                    ],
+                    spacing: spacing
+                ) {
+                    ForEach(products) { product in
+                        ProductCardView(product: product)
+                    }
+                }
+                .padding(.horizontal)
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
+                    LazyHStack(spacing: spacing) {
                         ForEach(products) { product in
                             ProductCardView(product: product)
                         }
@@ -43,15 +70,8 @@ struct ProductStripSectionView: View {
             }
         }
     }
-}
 
-struct ProductSectionRenderer: HomeSectionRenderer {
-    func canRender(_ type: HomeSectionType) -> Bool {
-        type == .products
-    }
-
-    @MainActor
-    func render(_ section: ComposedHomeSection) -> AnyView {
-        AnyView(ProductSectionView(section: section))
+    private var shouldShowTitle: Bool {
+        !(section.title ?? "").isEmpty
     }
 }

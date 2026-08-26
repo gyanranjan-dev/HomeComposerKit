@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Horizontal scrolling category cards.
+/// Horizontal scrolling category section.
 public struct CategorySectionView: View {
     let section: ComposedHomeSection
 
@@ -9,21 +9,33 @@ public struct CategorySectionView: View {
     }
 
     private var categories: [Category] {
-        if case .categories(let payload) = section.content {
-            return payload.categories
+        guard case .categories(let payload) = section.content else { return [] }
+        let items = payload.categories
+        if let limit = section.configuration?.limit {
+            return Array(items.prefix(limit))
         }
-        return []
+        return items
+    }
+
+    private var spacing: CGFloat {
+        CGFloat(section.configuration?.spacing ?? 12)
     }
 
     public var body: some View {
-        HomeSectionContainer(title: section.title) {
+        VStack(alignment: .leading, spacing: spacing) {
+            HomeSectionHeaderView(
+                title: section.title,
+                showTitle: shouldShowTitle
+            )
+
             if categories.isEmpty {
                 Text("No categories")
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
+                    .accessibilityLabel("No categories available")
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
+                    LazyHStack(spacing: spacing) {
                         ForEach(categories) { category in
                             categoryItem(category)
                         }
@@ -34,11 +46,16 @@ public struct CategorySectionView: View {
         }
     }
 
+    private var shouldShowTitle: Bool {
+        !(section.title ?? "").isEmpty
+    }
+
     private func categoryItem(_ category: Category) -> some View {
         VStack(spacing: 8) {
             RemoteImageView(url: category.imageURL)
                 .frame(width: 72, height: 72)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .clipShape(Circle())
+                .accessibilityHidden(true)
 
             Text(category.name)
                 .font(.caption.weight(.medium))
@@ -49,18 +66,10 @@ public struct CategorySectionView: View {
         .background(HomeUIColor.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .shadow(color: .black.opacity(0.05), radius: 4, y: 1)
-        // Tap intentionally no-op for Step 3.
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(category.name))
+        .accessibilityAddTraits(.isButton)
+        // Navigation is intentionally deferred.
         .onTapGesture {}
-    }
-}
-
-struct CategorySectionRenderer: HomeSectionRenderer {
-    func canRender(_ type: HomeSectionType) -> Bool {
-        type == .categories
-    }
-
-    @MainActor
-    func render(_ section: ComposedHomeSection) -> AnyView {
-        AnyView(CategorySectionView(section: section))
     }
 }
