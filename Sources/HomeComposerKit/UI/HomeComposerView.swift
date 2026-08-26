@@ -31,6 +31,26 @@ public struct HomeComposerView: View {
         self.rendererRegistry = rendererRegistry
     }
 
+    /// Creates a home page view from a host-prepared ``HomeRenderContext``.
+    ///
+    /// Typical host flow:
+    /// 1. Fetch JSON with the host networking stack
+    /// 2. Build a context with ``HomeRenderContextBuilder``
+    /// 3. Optionally customize ``HomeSectionRendererRegistry``
+    /// 4. Create `HomeComposerView(context:rendererRegistry:)`
+    public init(
+        context: HomeRenderContext,
+        composer: HomeComposer = HomeComposer(),
+        rendererRegistry: HomeSectionRendererRegistry = .makeDefault()
+    ) {
+        self.init(
+            homePage: context.homePage,
+            contentBySectionID: context.contentBySectionID,
+            composer: composer,
+            rendererRegistry: rendererRegistry
+        )
+    }
+
     public var body: some View {
         let sections = composer.compose(
             homePage,
@@ -60,10 +80,11 @@ public struct HomeComposerView: View {
 #if DEBUG
 struct HomeComposerView_Previews: PreviewProvider {
     static var previews: some View {
-        HomeComposerView(
+        let context = HomeRenderContextBuilder().makeContext(
             homePage: MockHomePage.sample,
             contentBySectionID: MockHomePage.sampleContent
         )
+        return HomeComposerView(context: context)
     }
 }
 #endif

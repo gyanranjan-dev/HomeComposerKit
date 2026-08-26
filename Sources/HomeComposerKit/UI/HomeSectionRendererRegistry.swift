@@ -42,6 +42,23 @@ public struct HomeSectionRendererRegistry {
         return registry
     }
 
+    /// Returns a copy of this registry with an additional (or replacement) renderer.
+    ///
+    /// Useful for host apps that want a fluent customization style:
+    ///
+    /// ```swift
+    /// let registry = HomeSectionRendererRegistry.makeDefault()
+    ///     .registering(.custom) { MyCustomSectionView(section: $0) }
+    /// ```
+    public func registering<Content: View>(
+        _ type: HomeSectionType,
+        @ViewBuilder renderer: @escaping (ComposedHomeSection) -> Content
+    ) -> HomeSectionRendererRegistry {
+        var copy = self
+        copy.register(type, renderer: renderer)
+        return copy
+    }
+
     private mutating func registerBuiltInRenderers() {
         register(.banner) { BannerSectionView(section: $0) }
         register(.categories) { CategorySectionView(section: $0) }
