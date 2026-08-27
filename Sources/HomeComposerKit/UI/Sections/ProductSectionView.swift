@@ -4,6 +4,8 @@ import SwiftUI
 public struct ProductSectionView: View {
     let section: ComposedHomeSection
 
+    @Environment(\.homeActionHandler) private var actionHandler
+
     public init(section: ComposedHomeSection) {
         self.section = section
     }
@@ -30,7 +32,10 @@ public struct ProductSectionView: View {
             HomeSectionHeaderView(
                 title: section.title,
                 showTitle: section.effectiveShowTitle,
-                showSeeAll: section.effectiveShowSeeAll
+                showSeeAll: section.effectiveShowSeeAll,
+                onSeeAll: section.effectiveShowSeeAll
+                    ? { actionHandler.handle(.section(id: section.id)) }
+                    : nil
             )
 
             if products.isEmpty {
@@ -45,7 +50,9 @@ public struct ProductSectionView: View {
                     columns: section.effectiveColumns(default: 2),
                     items: products
                 ) { product in
-                    ProductCardView(product: product)
+                    ProductCardView(product: product) {
+                        actionHandler.handle(.product(id: product.id))
+                    }
                 }
             }
         }

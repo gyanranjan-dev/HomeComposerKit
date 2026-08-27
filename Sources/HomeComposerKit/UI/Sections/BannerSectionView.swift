@@ -4,6 +4,8 @@ import SwiftUI
 public struct BannerSectionView: View {
     let section: ComposedHomeSection
 
+    @Environment(\.homeActionHandler) private var actionHandler
+
     public init(section: ComposedHomeSection) {
         self.section = section
     }
@@ -22,7 +24,10 @@ public struct BannerSectionView: View {
             HomeSectionHeaderView(
                 title: section.title,
                 showTitle: section.effectiveShowTitle,
-                showSeeAll: section.effectiveShowSeeAll
+                showSeeAll: section.effectiveShowSeeAll,
+                onSeeAll: section.effectiveShowSeeAll
+                    ? { actionHandler.handle(.section(id: section.id)) }
+                    : nil
             )
 
             if banners.isEmpty {
@@ -96,7 +101,27 @@ public struct BannerSectionView: View {
         }
     }
 
+    @ViewBuilder
     private func bannerCard(_ banner: Banner) -> some View {
+        let card = bannerCardContent(banner)
+
+        if let action = HomeAction.from(banner: banner) {
+            Button {
+                actionHandler.handle(action)
+            } label: {
+                card
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(accessibilityLabel(for: banner)))
+            .accessibilityAddTraits(.isButton)
+        } else {
+            card
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(Text(accessibilityLabel(for: banner)))
+        }
+    }
+
+    private func bannerCardContent(_ banner: Banner) -> some View {
         ZStack(alignment: .bottomLeading) {
             RemoteImageView(url: banner.imageURL)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -128,14 +153,13 @@ public struct BannerSectionView: View {
                         .foregroundStyle(.primary)
                         .clipShape(Capsule())
                         .padding(.top, 2)
+                        .accessibilityHidden(true)
                 }
             }
             .padding(16)
         }
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text(accessibilityLabel(for: banner)))
     }
 
     private func accessibilityLabel(for banner: Banner) -> String {

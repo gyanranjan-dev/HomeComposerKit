@@ -4,6 +4,8 @@ import SwiftUI
 public struct CategorySectionView: View {
     let section: ComposedHomeSection
 
+    @Environment(\.homeActionHandler) private var actionHandler
+
     public init(section: ComposedHomeSection) {
         self.section = section
     }
@@ -22,7 +24,10 @@ public struct CategorySectionView: View {
             HomeSectionHeaderView(
                 title: section.title,
                 showTitle: section.effectiveShowTitle,
-                showSeeAll: section.effectiveShowSeeAll
+                showSeeAll: section.effectiveShowSeeAll,
+                onSeeAll: section.effectiveShowSeeAll
+                    ? { actionHandler.handle(.section(id: section.id)) }
+                    : nil
             )
 
             if categories.isEmpty {
@@ -44,25 +49,26 @@ public struct CategorySectionView: View {
     }
 
     private func categoryItem(_ category: Category) -> some View {
-        VStack(spacing: 8) {
-            RemoteImageView(url: category.imageURL)
-                .frame(width: 72, height: 72)
-                .clipShape(Circle())
-                .accessibilityHidden(true)
+        Button {
+            actionHandler.handle(.category(id: category.id))
+        } label: {
+            VStack(spacing: 8) {
+                RemoteImageView(url: category.imageURL)
+                    .frame(width: 72, height: 72)
+                    .clipShape(Circle())
+                    .accessibilityHidden(true)
 
-            Text(category.name)
-                .font(.caption.weight(.medium))
-                .lineLimit(1)
-                .frame(width: 80)
+                Text(category.name)
+                    .font(.caption.weight(.medium))
+                    .lineLimit(1)
+                    .frame(width: 80)
+            }
+            .padding(8)
+            .background(HomeUIColor.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .shadow(color: .black.opacity(0.05), radius: 4, y: 1)
         }
-        .padding(8)
-        .background(HomeUIColor.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .shadow(color: .black.opacity(0.05), radius: 4, y: 1)
-        .accessibilityElement(children: .combine)
+        .buttonStyle(.plain)
         .accessibilityLabel(Text(category.name))
-        .accessibilityAddTraits(.isButton)
-        // Navigation is intentionally deferred.
-        .onTapGesture {}
     }
 }

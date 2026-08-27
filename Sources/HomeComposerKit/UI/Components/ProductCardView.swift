@@ -3,13 +3,27 @@ import SwiftUI
 /// Reusable product card for products, popular products, and favorites.
 struct ProductCardView: View {
     let product: Product
+    var onTap: (() -> Void)? = nil
 
     var body: some View {
+        Group {
+            if let onTap {
+                Button(action: onTap) {
+                    cardContent
+                }
+                .buttonStyle(.plain)
+            } else {
+                cardContent
+            }
+        }
+    }
+
+    private var cardContent: some View {
         VStack(alignment: .leading, spacing: 8) {
             RemoteImageView(url: product.imageURL)
                 .frame(width: 148, height: 148)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .accessibilityLabel(Text("\(product.name) image"))
+                .accessibilityHidden(true)
 
             Text(product.name)
                 .font(.subheadline.weight(.semibold))
@@ -24,8 +38,6 @@ struct ProductCardView: View {
                     Text("Price \(ProductPriceFormatter.string(price: product.price, currency: product.currency))")
                 )
 
-            // Original/discount price is not represented on the current Product model.
-
             if product.isFavorite {
                 Label("Favorite", systemImage: "heart.fill")
                     .font(.caption2)
@@ -38,5 +50,7 @@ struct ProductCardView: View {
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
         .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(product.name))
+        .accessibilityAddTraits(onTap == nil ? [] : .isButton)
     }
 }

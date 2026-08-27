@@ -4,6 +4,8 @@ import SwiftUI
 public struct SocialSectionView: View {
     let section: ComposedHomeSection
 
+    @Environment(\.homeActionHandler) private var actionHandler
+
     public init(section: ComposedHomeSection) {
         self.section = section
     }
@@ -22,7 +24,10 @@ public struct SocialSectionView: View {
             HomeSectionHeaderView(
                 title: section.title,
                 showTitle: section.effectiveShowTitle,
-                showSeeAll: section.effectiveShowSeeAll
+                showSeeAll: section.effectiveShowSeeAll,
+                onSeeAll: section.effectiveShowSeeAll
+                    ? { actionHandler.handle(.section(id: section.id)) }
+                    : nil
             )
 
             if posts.isEmpty {

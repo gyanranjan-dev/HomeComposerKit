@@ -20,6 +20,8 @@
 //       ↓
 //   Composition       (HomeComposer — skips invalid/disabled; keeps ordering)
 //       ↓
+//   Actions           (HomeAction — host interprets user interactions)
+//       ↓
 //   SwiftUI Rendering (HomeComposerView + HomeSectionRendererRegistry)
 //                     Unregistered renderers → EmptyView (safe fallback)
 //
