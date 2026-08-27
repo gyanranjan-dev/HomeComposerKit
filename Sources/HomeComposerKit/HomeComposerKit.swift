@@ -14,6 +14,8 @@
 //       ↓
 //   Validation        (optional HomePageValidator → HomeValidationResult)
 //       ↓
+//   AI                (HomeAIConfigurationEngine — host-injected HomeAIProvider)
+//       ↓
 //   Diagnostics       (HomeComposerDiagnosticReporting — silent by default)
 //       ↓
 //   Integration       (HomeRenderContextBuilder / HomePageProviding)
@@ -26,4 +28,6 @@
 //                     Unregistered renderers → EmptyView (safe fallback)
 //
 // HomeComposerKit does not perform networking or authentication.
+// HomeComposerKit does not provide an AI vendor implementation.
+// The host application supplies HomeAIProvider; the SDK validates structured output.
 // Backend configuration changes must not crash an existing host app.
