@@ -4,9 +4,11 @@
 //
 //   Host App
 //       ↓  (owns networking, authentication, caching, logging)
-//   JSON / Data
+//   JSON / Data  (HomeAPIResponse contract)
 //       ↓
-//   Decoding          (HomePageDecoder — unknown section types preserved)
+//   API               (HomeAPIResponseDecoder → HomeAPIResponse)
+//       ↓
+//   Decoding          (HomePageDecoder — also supports direct HomePage JSON)
 //       ↓
 //   Models            (HomePage + optional schemaVersion / configurationVersion)
 //       ↓

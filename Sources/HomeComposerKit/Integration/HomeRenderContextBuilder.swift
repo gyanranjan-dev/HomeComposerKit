@@ -7,12 +7,12 @@ import Foundation
 ///
 /// Recommended host flow:
 /// ```swift
-/// let context = try HomeRenderContextBuilder().makeContext(
-///     from: data,
+/// let response = try HomeAPIResponseDecoder().decode(data)
+/// let context = HomeRenderContextBuilder().makeContext(
+///     from: response,
 ///     contentBySectionID: content
 /// )
 /// let validation = context.validate(diagnosticReporter: hostReporter)
-/// let sections = context.compose(diagnosticReporter: hostReporter)
 /// let view = HomeComposerView(context: context, rendererRegistry: registry)
 /// ```
 public struct HomeRenderContextBuilder: Sendable {
@@ -84,6 +84,41 @@ public struct HomeRenderContextBuilder: Sendable {
             context.validate(diagnosticReporter: diagnosticReporter)
         }
         return context
+    }
+
+    /// Builds a context from a decoded ``HomeAPIResponse``.
+    ///
+    /// Converts the API envelope into ``HomePage`` and pairs it with host-resolved
+    /// section content. Does not fetch ``HomeAPISection/contentRef`` values.
+    public func makeContext(
+        from response: HomeAPIResponse,
+        contentBySectionID: [String: HomeSectionContent] = [:],
+        validate: Bool = false,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
+    ) -> HomeRenderContext {
+        makeContext(
+            homePage: response.makeHomePage(),
+            contentBySectionID: contentBySectionID,
+            validate: validate,
+            diagnosticReporter: diagnosticReporter
+        )
+    }
+
+    /// Decodes a ``HomeAPIResponse`` envelope from data, then builds a render context.
+    public func makeContext(
+        fromAPIResponse data: Data,
+        contentBySectionID: [String: HomeSectionContent] = [:],
+        validate: Bool = false,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter(),
+        apiDecoder: HomeAPIResponseDecoder = HomeAPIResponseDecoder()
+    ) throws -> HomeRenderContext {
+        let response = try apiDecoder.decode(data)
+        return makeContext(
+            from: response,
+            contentBySectionID: contentBySectionID,
+            validate: validate,
+            diagnosticReporter: diagnosticReporter
+        )
     }
 
     /// Builds a context from a host ``HomePageProviding`` implementation.
