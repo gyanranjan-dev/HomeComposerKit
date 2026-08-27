@@ -15,7 +15,7 @@ public enum MockHomePage {
                 order: 0,
                 isEnabled: true,
                 configuration: SectionConfiguration(
-                    layout: "carousel",
+                    layout: .carousel,
                     limit: 5,
                     columns: 1,
                     spacing: 8.0
@@ -28,7 +28,7 @@ public enum MockHomePage {
                 order: 1,
                 isEnabled: true,
                 configuration: SectionConfiguration(
-                    layout: "horizontal",
+                    layout: .horizontal,
                     limit: 10,
                     columns: 4,
                     spacing: 12.0
@@ -41,7 +41,7 @@ public enum MockHomePage {
                 order: 2,
                 isEnabled: true,
                 configuration: SectionConfiguration(
-                    layout: "grid",
+                    layout: .grid,
                     limit: 10,
                     columns: 2,
                     spacing: 12.0
@@ -54,7 +54,7 @@ public enum MockHomePage {
                 order: 3,
                 isEnabled: true,
                 configuration: SectionConfiguration(
-                    layout: "horizontal",
+                    layout: .horizontal,
                     limit: 8,
                     columns: 2,
                     spacing: 12.0
@@ -67,7 +67,7 @@ public enum MockHomePage {
                 order: 4,
                 isEnabled: true,
                 configuration: SectionConfiguration(
-                    layout: "horizontal",
+                    layout: .horizontal,
                     limit: 8,
                     columns: 2,
                     spacing: 12.0

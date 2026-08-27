@@ -79,7 +79,7 @@ final class HomeAPIResponseTests: XCTestCase {
         XCTAssertEqual(response.id, "home-001")
         XCTAssertEqual(response.sections.count, 1)
         XCTAssertEqual(response.sections[0].type, .banner)
-        XCTAssertEqual(response.sections[0].configuration?.layout, "carousel")
+        XCTAssertEqual(response.sections[0].configuration?.layout, .carousel)
         XCTAssertEqual(response.sections[0].configuration?.limit, 3)
         XCTAssertEqual(response.metadata?.locale, "en")
     }
@@ -154,7 +154,7 @@ final class HomeAPIResponseTests: XCTestCase {
         XCTAssertEqual(homePage.sections[0].type, .banner)
         XCTAssertTrue(homePage.sections[0].isEnabled)
         XCTAssertEqual(homePage.sections[1].type, .products)
-        XCTAssertEqual(homePage.sections[1].configuration?.layout, "grid")
+        XCTAssertEqual(homePage.sections[1].configuration?.layout, .grid)
     }
 
     func testMinimalResponseUsesDefaultHomePageVersion() throws {

@@ -91,3 +91,107 @@ enum ProductPriceFormatter {
         return formatter.string(from: price as NSDecimalNumber) ?? "\(currency) \(price)"
     }
 }
+
+/// Renders a collection of section items according to presentation layout intent.
+struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
+    let layout: HomeSectionLayout
+    let spacing: CGFloat
+    let columns: Int
+    let items: [Item]
+    let carouselHeight: CGFloat?
+    let itemContent: (Item) -> ItemContent
+
+    init(
+        layout: HomeSectionLayout,
+        spacing: CGFloat,
+        columns: Int,
+        items: [Item],
+        carouselHeight: CGFloat? = nil,
+        @ViewBuilder itemContent: @escaping (Item) -> ItemContent
+    ) {
+        self.layout = layout
+        self.spacing = spacing
+        self.columns = columns
+        self.items = items
+        self.carouselHeight = carouselHeight
+        self.itemContent = itemContent
+    }
+
+    var body: some View {
+        if items.isEmpty {
+            EmptyView()
+        } else {
+            switch layout {
+            case .horizontal:
+                horizontalLayout
+            case .vertical:
+                verticalLayout
+            case .grid:
+                gridLayout
+            case .carousel:
+                carouselLayout
+            case .unknown:
+                horizontalLayout
+            }
+        }
+    }
+
+    private var horizontalLayout: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHStack(spacing: spacing) {
+                ForEach(items) { item in
+                    itemContent(item)
+                }
+            }
+            .padding(.horizontal)
+        }
+    }
+
+    private var verticalLayout: some View {
+        VStack(spacing: spacing) {
+            ForEach(items) { item in
+                itemContent(item)
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    private var gridLayout: some View {
+        LazyVGrid(
+            columns: Array(
+                repeating: GridItem(.flexible(), spacing: spacing),
+                count: max(columns, 1)
+            ),
+            spacing: spacing
+        ) {
+            ForEach(items) { item in
+                itemContent(item)
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    @ViewBuilder
+    private var carouselLayout: some View {
+        #if os(iOS)
+        TabView {
+            ForEach(items) { item in
+                itemContent(item)
+                    .padding(.horizontal)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: items.count > 1 ? .automatic : .never))
+        .frame(height: carouselHeight)
+        #else
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHStack(spacing: spacing) {
+                ForEach(items) { item in
+                    itemContent(item)
+                }
+            }
+            .padding(.horizontal)
+        }
+        .frame(height: carouselHeight)
+        #endif
+    }
+}

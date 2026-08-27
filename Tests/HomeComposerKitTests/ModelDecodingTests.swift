@@ -76,7 +76,7 @@ final class ModelDecodingTests: XCTestCase {
         XCTAssertEqual(section.title, "Trending")
         XCTAssertEqual(section.order, 2)
         XCTAssertTrue(section.isEnabled)
-        XCTAssertEqual(section.configuration?.layout, "grid")
+        XCTAssertEqual(section.configuration?.layout, .grid)
         XCTAssertEqual(section.configuration?.limit, 10)
         XCTAssertEqual(section.configuration?.columns, 2)
         XCTAssertEqual(section.configuration?.spacing, 12.0)
@@ -90,7 +90,7 @@ final class ModelDecodingTests: XCTestCase {
             order: 2,
             isEnabled: true,
             configuration: SectionConfiguration(
-                layout: "grid",
+                layout: .grid,
                 limit: 10,
                 columns: 2,
                 spacing: 12.0

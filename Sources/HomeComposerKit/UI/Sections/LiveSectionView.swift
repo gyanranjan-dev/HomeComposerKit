@@ -17,15 +17,12 @@ public struct LiveSectionView: View {
         return items
     }
 
-    private var spacing: CGFloat {
-        CGFloat(section.configuration?.spacing ?? 12)
-    }
-
     public var body: some View {
-        VStack(alignment: .leading, spacing: spacing) {
+        VStack(alignment: .leading, spacing: section.effectiveSpacing) {
             HomeSectionHeaderView(
                 title: section.title,
-                showTitle: shouldShowTitle
+                showTitle: section.effectiveShowTitle,
+                showSeeAll: section.effectiveShowSeeAll
             )
 
             if streams.isEmpty {
@@ -34,20 +31,17 @@ public struct LiveSectionView: View {
                     .padding(.horizontal)
                     .accessibilityLabel("No live streams available")
             } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: spacing) {
-                        ForEach(streams) { stream in
-                            liveCard(stream)
-                        }
-                    }
-                    .padding(.horizontal)
+                HomeSectionItemsLayoutView(
+                    layout: section.effectiveLayout,
+                    spacing: section.effectiveSpacing,
+                    columns: section.effectiveColumns(default: 2),
+                    items: streams,
+                    carouselHeight: 160
+                ) { stream in
+                    liveCard(stream)
                 }
             }
         }
-    }
-
-    private var shouldShowTitle: Bool {
-        !(section.title ?? "").isEmpty
     }
 
     private func liveCard(_ stream: LiveStream) -> some View {

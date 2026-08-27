@@ -17,15 +17,12 @@ public struct SocialSectionView: View {
         return items
     }
 
-    private var spacing: CGFloat {
-        CGFloat(section.configuration?.spacing ?? 12)
-    }
-
     public var body: some View {
-        VStack(alignment: .leading, spacing: spacing) {
+        VStack(alignment: .leading, spacing: section.effectiveSpacing) {
             HomeSectionHeaderView(
                 title: section.title,
-                showTitle: shouldShowTitle
+                showTitle: section.effectiveShowTitle,
+                showSeeAll: section.effectiveShowSeeAll
             )
 
             if posts.isEmpty {
@@ -34,20 +31,17 @@ public struct SocialSectionView: View {
                     .padding(.horizontal)
                     .accessibilityLabel("No social posts available")
             } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: spacing) {
-                        ForEach(posts) { post in
-                            socialCard(post)
-                        }
-                    }
-                    .padding(.horizontal)
+                HomeSectionItemsLayoutView(
+                    layout: section.effectiveLayout,
+                    spacing: section.effectiveSpacing,
+                    columns: section.effectiveColumns(default: 2),
+                    items: posts,
+                    carouselHeight: 220
+                ) { post in
+                    socialCard(post)
                 }
             }
         }
-    }
-
-    private var shouldShowTitle: Bool {
-        !(section.title ?? "").isEmpty
     }
 
     private func socialCard(_ post: SocialPost) -> some View {

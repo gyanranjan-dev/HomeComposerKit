@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Banner carousel section with image, title, and optional subtitle.
+/// Banner section driven by presentation configuration.
 public struct BannerSectionView: View {
     let section: ComposedHomeSection
 
@@ -17,51 +17,83 @@ public struct BannerSectionView: View {
         return items
     }
 
-    private var spacing: CGFloat {
-        CGFloat(section.configuration?.spacing ?? 12)
-    }
-
     public var body: some View {
-        VStack(alignment: .leading, spacing: spacing) {
+        VStack(alignment: .leading, spacing: section.effectiveSpacing) {
             HomeSectionHeaderView(
                 title: section.title,
-                showTitle: shouldShowTitle
+                showTitle: section.effectiveShowTitle,
+                showSeeAll: section.effectiveShowSeeAll
             )
 
             if banners.isEmpty {
                 emptyPlaceholder
-            } else if banners.count == 1, let banner = banners.first {
-                bannerCard(banner)
-                    .padding(.horizontal)
-                    .frame(height: 200)
             } else {
-                #if os(iOS)
-                TabView {
-                    ForEach(banners) { banner in
-                        bannerCard(banner)
-                            .padding(.horizontal)
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .automatic))
-                .frame(height: 200)
-                #else
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: spacing) {
-                        ForEach(banners) { banner in
-                            bannerCard(banner)
-                                .frame(width: 480, height: 200)
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                .frame(height: 200)
-                #endif
+                bannerContent
             }
         }
     }
 
-    private var shouldShowTitle: Bool {
-        !(section.title ?? "").isEmpty
+    @ViewBuilder
+    private var bannerContent: some View {
+        switch section.effectiveLayout {
+        case .carousel:
+            if banners.count == 1, let banner = banners.first {
+                bannerCard(banner)
+                    .padding(.horizontal)
+                    .frame(height: 200)
+            } else {
+                HomeSectionItemsLayoutView(
+                    layout: .carousel,
+                    spacing: section.effectiveSpacing,
+                    columns: 1,
+                    items: banners,
+                    carouselHeight: 200
+                ) { banner in
+                    bannerCard(banner)
+                }
+            }
+        case .horizontal:
+            HomeSectionItemsLayoutView(
+                layout: .horizontal,
+                spacing: section.effectiveSpacing,
+                columns: 1,
+                items: banners
+            ) { banner in
+                bannerCard(banner)
+                    .frame(width: 480, height: 200)
+            }
+            .frame(height: 200)
+        case .vertical:
+            HomeSectionItemsLayoutView(
+                layout: .vertical,
+                spacing: section.effectiveSpacing,
+                columns: 1,
+                items: banners
+            ) { banner in
+                bannerCard(banner)
+                    .frame(height: 200)
+            }
+        case .grid:
+            HomeSectionItemsLayoutView(
+                layout: .grid,
+                spacing: section.effectiveSpacing,
+                columns: section.effectiveColumns(default: 1),
+                items: banners
+            ) { banner in
+                bannerCard(banner)
+                    .frame(height: 160)
+            }
+        case .unknown:
+            HomeSectionItemsLayoutView(
+                layout: .carousel,
+                spacing: section.effectiveSpacing,
+                columns: 1,
+                items: banners,
+                carouselHeight: 200
+            ) { banner in
+                bannerCard(banner)
+            }
+        }
     }
 
     private func bannerCard(_ banner: Banner) -> some View {

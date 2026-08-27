@@ -25,20 +25,12 @@ public struct ProductSectionView: View {
         return items
     }
 
-    private var spacing: CGFloat {
-        CGFloat(section.configuration?.spacing ?? 12)
-    }
-
-    private var usesGridLayout: Bool {
-        section.configuration?.layout?.lowercased() == "grid"
-    }
-
     public var body: some View {
-        VStack(alignment: .leading, spacing: spacing) {
+        VStack(alignment: .leading, spacing: section.effectiveSpacing) {
             HomeSectionHeaderView(
                 title: section.title,
-                showTitle: shouldShowTitle,
-                showSeeAll: false
+                showTitle: section.effectiveShowTitle,
+                showSeeAll: section.effectiveShowSeeAll
             )
 
             if products.isEmpty {
@@ -46,32 +38,16 @@ public struct ProductSectionView: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
                     .accessibilityLabel("No products available")
-            } else if usesGridLayout {
-                LazyVGrid(
-                    columns: [
-                        GridItem(.adaptive(minimum: 148), spacing: spacing)
-                    ],
-                    spacing: spacing
-                ) {
-                    ForEach(products) { product in
-                        ProductCardView(product: product)
-                    }
-                }
-                .padding(.horizontal)
             } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: spacing) {
-                        ForEach(products) { product in
-                            ProductCardView(product: product)
-                        }
-                    }
-                    .padding(.horizontal)
+                HomeSectionItemsLayoutView(
+                    layout: section.effectiveLayout,
+                    spacing: section.effectiveSpacing,
+                    columns: section.effectiveColumns(default: 2),
+                    items: products
+                ) { product in
+                    ProductCardView(product: product)
                 }
             }
         }
-    }
-
-    private var shouldShowTitle: Bool {
-        !(section.title ?? "").isEmpty
     }
 }

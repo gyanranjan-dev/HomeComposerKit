@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Horizontal scrolling category section.
+/// Category section driven by presentation configuration.
 public struct CategorySectionView: View {
     let section: ComposedHomeSection
 
@@ -17,15 +17,12 @@ public struct CategorySectionView: View {
         return items
     }
 
-    private var spacing: CGFloat {
-        CGFloat(section.configuration?.spacing ?? 12)
-    }
-
     public var body: some View {
-        VStack(alignment: .leading, spacing: spacing) {
+        VStack(alignment: .leading, spacing: section.effectiveSpacing) {
             HomeSectionHeaderView(
                 title: section.title,
-                showTitle: shouldShowTitle
+                showTitle: section.effectiveShowTitle,
+                showSeeAll: section.effectiveShowSeeAll
             )
 
             if categories.isEmpty {
@@ -34,20 +31,16 @@ public struct CategorySectionView: View {
                     .padding(.horizontal)
                     .accessibilityLabel("No categories available")
             } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: spacing) {
-                        ForEach(categories) { category in
-                            categoryItem(category)
-                        }
-                    }
-                    .padding(.horizontal)
+                HomeSectionItemsLayoutView(
+                    layout: section.effectiveLayout,
+                    spacing: section.effectiveSpacing,
+                    columns: section.effectiveColumns(default: 4),
+                    items: categories
+                ) { category in
+                    categoryItem(category)
                 }
             }
         }
-    }
-
-    private var shouldShowTitle: Bool {
-        !(section.title ?? "").isEmpty
     }
 
     private func categoryItem(_ category: Category) -> some View {

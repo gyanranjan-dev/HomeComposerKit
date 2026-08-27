@@ -137,7 +137,7 @@ final class CompositionTests: XCTestCase {
 
     func testComposedSectionCarriesRendererData() {
         let configuration = SectionConfiguration(
-            layout: "grid",
+            layout: .grid,
             limit: 8,
             columns: 2,
             spacing: 12.0
@@ -164,7 +164,7 @@ final class CompositionTests: XCTestCase {
         XCTAssertEqual(composed[0].type, .products)
         XCTAssertEqual(composed[0].title, "Trending")
         XCTAssertEqual(composed[0].order, 4)
-        XCTAssertEqual(composed[0].configuration?.layout, "grid")
+        XCTAssertEqual(composed[0].configuration?.layout, .grid)
         XCTAssertEqual(composed[0].configuration?.limit, 8)
         XCTAssertEqual(composed[0].configuration?.columns, 2)
         XCTAssertEqual(composed[0].configuration?.spacing, 12.0)

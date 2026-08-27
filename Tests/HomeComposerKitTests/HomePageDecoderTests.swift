@@ -83,7 +83,7 @@ final class HomePageDecoderTests: XCTestCase {
         let homePage = try decoder.decode(Self.validHomePageJSON)
         let products = try XCTUnwrap(homePage.sections.first { $0.id == "section-products" })
 
-        XCTAssertEqual(products.configuration?.layout, "grid")
+        XCTAssertEqual(products.configuration?.layout, .grid)
         XCTAssertEqual(products.configuration?.limit, 10)
         XCTAssertEqual(products.configuration?.columns, 2)
         XCTAssertEqual(products.configuration?.spacing, 12.0)
