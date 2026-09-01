@@ -29,6 +29,7 @@
 //   Content           (HomeImageProvider / HomeContentProvider — host loading)
 //       ↓
 //   SwiftUI Rendering (HomeComposerView + HomeSectionRendererRegistry)
+//                     Host extensions via HomeSectionRendering registration
 //                     Unregistered renderers → EmptyView (safe fallback)
 //
 // HomeComposerKit does not perform networking or authentication.
