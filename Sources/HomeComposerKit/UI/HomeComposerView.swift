@@ -23,6 +23,14 @@ import SwiftUI
 ///     }
 /// )
 /// ```
+///
+/// ## Theming
+///
+/// Pass a ``HomeComposerTheme`` to customize spacing, typography, and colors:
+///
+/// ```swift
+/// HomeComposerView(homePage: page, theme: .default)
+/// ```
 public struct HomeComposerView: View {
 
     public let homePage: HomePage
@@ -31,6 +39,7 @@ public struct HomeComposerView: View {
     private let composer: HomeComposer
     private let rendererRegistry: HomeSectionRendererRegistry
     private let actionHandler: HomeActionHandler
+    private let theme: HomeComposerTheme
 
     /// Creates a home page view.
     ///
@@ -39,6 +48,7 @@ public struct HomeComposerView: View {
     ///   - contentBySectionID: Optional section payloads keyed by section `id`.
     ///   - composer: Composer used to produce ordered renderable sections.
     ///   - rendererRegistry: Section renderer mappings. Defaults to built-in renderers.
+    ///   - theme: Visual theme for built-in section renderers. Defaults to ``HomeComposerTheme/default``.
     ///   - onAction: Optional host callback for user interactions. When omitted,
     ///     interactions are safely ignored.
     public init(
@@ -46,12 +56,14 @@ public struct HomeComposerView: View {
         contentBySectionID: [String: HomeSectionContent] = [:],
         composer: HomeComposer = HomeComposer(),
         rendererRegistry: HomeSectionRendererRegistry = .makeDefault(),
+        theme: HomeComposerTheme = .default,
         onAction: ((HomeAction) -> Void)? = nil
     ) {
         self.homePage = homePage
         self.contentBySectionID = contentBySectionID
         self.composer = composer
         self.rendererRegistry = rendererRegistry
+        self.theme = theme
         self.actionHandler = onAction.map(HomeActionHandler.init) ?? .noop
     }
 
@@ -61,11 +73,12 @@ public struct HomeComposerView: View {
     /// 1. Fetch JSON with the host networking stack
     /// 2. Build a context with ``HomeRenderContextBuilder``
     /// 3. Optionally customize ``HomeSectionRendererRegistry``
-    /// 4. Create `HomeComposerView(context:rendererRegistry:onAction:)`
+    /// 4. Create `HomeComposerView(context:rendererRegistry:theme:onAction:)`
     public init(
         context: HomeRenderContext,
         composer: HomeComposer = HomeComposer(),
         rendererRegistry: HomeSectionRendererRegistry = .makeDefault(),
+        theme: HomeComposerTheme = .default,
         onAction: ((HomeAction) -> Void)? = nil
     ) {
         self.init(
@@ -73,6 +86,7 @@ public struct HomeComposerView: View {
             contentBySectionID: context.contentBySectionID,
             composer: composer,
             rendererRegistry: rendererRegistry,
+            theme: theme,
             onAction: onAction
         )
     }
@@ -84,12 +98,12 @@ public struct HomeComposerView: View {
         )
 
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 24) {
+            LazyVStack(alignment: .leading, spacing: theme.sectionSpacing) {
                 if let title = homePage.title, !title.isEmpty {
                     Text(title)
-                        .font(.largeTitle.bold())
-                        .padding(.horizontal)
-                        .padding(.top, 8)
+                        .font(theme.typography.pageTitle)
+                        .padding(.horizontal, theme.horizontalContentPadding)
+                        .padding(.top, theme.spacing.small)
                         .accessibilityAddTraits(.isHeader)
                 }
 
@@ -97,9 +111,10 @@ public struct HomeComposerView: View {
                     HomeSectionView(section: section, registry: rendererRegistry)
                 }
             }
-            .padding(.bottom, 24)
+            .padding(.bottom, theme.sectionSpacing)
         }
-        .background(HomeUIColor.groupedBackground)
+        .background(theme.backgroundColor)
+        .homeComposerTheme(theme)
         .homeActionHandler(actionHandler)
     }
 }

@@ -5,6 +5,7 @@ public struct CategorySectionView: View {
     let section: ComposedHomeSection
 
     @Environment(\.homeActionHandler) private var actionHandler
+    @Environment(\.homeComposerTheme) private var theme
 
     public init(section: ComposedHomeSection) {
         self.section = section
@@ -32,8 +33,9 @@ public struct CategorySectionView: View {
 
             if categories.isEmpty {
                 Text("No categories")
+                    .font(theme.typography.body)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal)
+                    .padding(.horizontal, theme.horizontalContentPadding)
                     .accessibilityLabel("No categories available")
             } else {
                 HomeSectionItemsLayoutView(
@@ -52,20 +54,25 @@ public struct CategorySectionView: View {
         Button {
             actionHandler.handle(.category(id: category.id))
         } label: {
-            VStack(spacing: 8) {
+            VStack(spacing: theme.cardSpacing) {
                 RemoteImageView(url: category.imageURL)
                     .frame(width: 72, height: 72)
                     .clipShape(Circle())
                     .accessibilityHidden(true)
 
                 Text(category.name)
-                    .font(.caption.weight(.medium))
+                    .font(theme.typography.caption.weight(.medium))
                     .lineLimit(1)
                     .frame(width: 80)
             }
-            .padding(8)
-            .background(HomeUIColor.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .padding(theme.spacing.small)
+            .background(theme.cardBackgroundColor)
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: theme.cornerRadius.medium,
+                    style: .continuous
+                )
+            )
             .shadow(color: .black.opacity(0.05), radius: 4, y: 1)
         }
         .buttonStyle(.plain)

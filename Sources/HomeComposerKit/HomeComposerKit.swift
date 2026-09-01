@@ -24,6 +24,8 @@
 //       ↓
 //   Actions           (HomeAction — host interprets user interactions)
 //       ↓
+//   Theme             (HomeComposerTheme — host-customizable visual styling)
+//       ↓
 //   SwiftUI Rendering (HomeComposerView + HomeSectionRendererRegistry)
 //                     Unregistered renderers → EmptyView (safe fallback)
 //

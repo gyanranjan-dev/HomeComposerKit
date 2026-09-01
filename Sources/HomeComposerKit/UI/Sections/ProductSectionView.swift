@@ -5,6 +5,7 @@ public struct ProductSectionView: View {
     let section: ComposedHomeSection
 
     @Environment(\.homeActionHandler) private var actionHandler
+    @Environment(\.homeComposerTheme) private var theme
 
     public init(section: ComposedHomeSection) {
         self.section = section
@@ -40,8 +41,9 @@ public struct ProductSectionView: View {
 
             if products.isEmpty {
                 Text("No products")
+                    .font(theme.typography.body)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal)
+                    .padding(.horizontal, theme.horizontalContentPadding)
                     .accessibilityLabel("No products available")
             } else {
                 HomeSectionItemsLayoutView(

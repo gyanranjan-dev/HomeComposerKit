@@ -5,6 +5,7 @@ public struct SocialSectionView: View {
     let section: ComposedHomeSection
 
     @Environment(\.homeActionHandler) private var actionHandler
+    @Environment(\.homeComposerTheme) private var theme
 
     public init(section: ComposedHomeSection) {
         self.section = section
@@ -32,8 +33,9 @@ public struct SocialSectionView: View {
 
             if posts.isEmpty {
                 Text("No posts")
+                    .font(theme.typography.body)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal)
+                    .padding(.horizontal, theme.horizontalContentPadding)
                     .accessibilityLabel("No social posts available")
             } else {
                 HomeSectionItemsLayoutView(
@@ -50,25 +52,35 @@ public struct SocialSectionView: View {
     }
 
     private func socialCard(_ post: SocialPost) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: theme.cardSpacing) {
             RemoteImageView(url: post.imageURL)
                 .frame(width: 180, height: 140)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: theme.cornerRadius.small,
+                        style: .continuous
+                    )
+                )
 
             Text(post.author)
-                .font(.caption.weight(.semibold))
+                .font(theme.typography.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
 
             if let content = post.content {
                 Text(content)
-                    .font(.subheadline)
+                    .font(theme.typography.body)
                     .lineLimit(3)
                     .frame(width: 180, alignment: .leading)
             }
         }
-        .padding(10)
-        .background(HomeUIColor.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .padding(theme.cardPadding)
+        .background(theme.cardBackgroundColor)
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: theme.cornerRadius.medium,
+                style: .continuous
+            )
+        )
         .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(accessibilityLabel(for: post)))

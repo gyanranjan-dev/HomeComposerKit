@@ -1,48 +1,11 @@
 import SwiftUI
-#if canImport(UIKit)
-import UIKit
-#endif
-#if canImport(AppKit)
-import AppKit
-#endif
-
-/// Cross-platform semantic colors used by the SwiftUI layer.
-enum HomeUIColor {
-    static var groupedBackground: Color {
-        #if canImport(UIKit) && !os(watchOS)
-        Color(uiColor: .systemGroupedBackground)
-        #elseif canImport(AppKit)
-        Color(nsColor: .windowBackgroundColor)
-        #else
-        Color.gray.opacity(0.08)
-        #endif
-    }
-
-    static var cardBackground: Color {
-        #if canImport(UIKit) && !os(watchOS)
-        Color(uiColor: .systemBackground)
-        #elseif canImport(AppKit)
-        Color(nsColor: .controlBackgroundColor)
-        #else
-        Color.white
-        #endif
-    }
-
-    static var placeholderBackground: Color {
-        #if canImport(UIKit) && !os(watchOS)
-        Color(uiColor: .secondarySystemBackground)
-        #elseif canImport(AppKit)
-        Color(nsColor: .underPageBackgroundColor)
-        #else
-        Color.gray.opacity(0.15)
-        #endif
-    }
-}
 
 /// Loads a remote image with loading and failure placeholders.
 struct RemoteImageView: View {
     let url: URL?
     var contentMode: ContentMode = .fill
+
+    @Environment(\.homeComposerTheme) private var theme
 
     var body: some View {
         Group {
@@ -57,7 +20,7 @@ struct RemoteImageView: View {
                         placeholder
                     case .empty:
                         ZStack {
-                            HomeUIColor.placeholderBackground
+                            theme.placeholderBackgroundColor
                             ProgressView()
                         }
                     @unknown default:
@@ -73,7 +36,7 @@ struct RemoteImageView: View {
 
     private var placeholder: some View {
         ZStack {
-            HomeUIColor.placeholderBackground
+            theme.placeholderBackgroundColor
             Image(systemName: "photo")
                 .font(.title2)
                 .foregroundStyle(.secondary)
@@ -100,6 +63,8 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
     let items: [Item]
     let carouselHeight: CGFloat?
     let itemContent: (Item) -> ItemContent
+
+    @Environment(\.homeComposerTheme) private var theme
 
     init(
         layout: HomeSectionLayout,
@@ -143,7 +108,7 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
                     itemContent(item)
                 }
             }
-            .padding(.horizontal)
+            .padding(.horizontal, theme.horizontalContentPadding)
         }
     }
 
@@ -153,7 +118,7 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
                 itemContent(item)
             }
         }
-        .padding(.horizontal)
+        .padding(.horizontal, theme.horizontalContentPadding)
     }
 
     private var gridLayout: some View {
@@ -168,7 +133,7 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
                 itemContent(item)
             }
         }
-        .padding(.horizontal)
+        .padding(.horizontal, theme.horizontalContentPadding)
     }
 
     @ViewBuilder
@@ -177,7 +142,7 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
         TabView {
             ForEach(items) { item in
                 itemContent(item)
-                    .padding(.horizontal)
+                    .padding(.horizontal, theme.horizontalContentPadding)
             }
         }
         .tabViewStyle(.page(indexDisplayMode: items.count > 1 ? .automatic : .never))
@@ -189,7 +154,7 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
                     itemContent(item)
                 }
             }
-            .padding(.horizontal)
+            .padding(.horizontal, theme.horizontalContentPadding)
         }
         .frame(height: carouselHeight)
         #endif

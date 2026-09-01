@@ -5,6 +5,7 @@ public struct LiveSectionView: View {
     let section: ComposedHomeSection
 
     @Environment(\.homeActionHandler) private var actionHandler
+    @Environment(\.homeComposerTheme) private var theme
 
     public init(section: ComposedHomeSection) {
         self.section = section
@@ -32,8 +33,9 @@ public struct LiveSectionView: View {
 
             if streams.isEmpty {
                 Text("No live streams")
+                    .font(theme.typography.body)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal)
+                    .padding(.horizontal, theme.horizontalContentPadding)
                     .accessibilityLabel("No live streams available")
             } else {
                 HomeSectionItemsLayoutView(
@@ -50,7 +52,7 @@ public struct LiveSectionView: View {
     }
 
     private func liveCard(_ stream: LiveStream) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: theme.cardSpacing) {
             ZStack(alignment: .topLeading) {
                 RemoteImageView(url: stream.thumbnailURL)
                     .frame(width: 200, height: 120)
@@ -58,26 +60,36 @@ public struct LiveSectionView: View {
 
                 if stream.isLive {
                     Text("LIVE")
-                        .font(.caption2.weight(.bold))
+                        .font(theme.typography.caption.weight(.bold))
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, theme.spacing.small)
+                        .padding(.vertical, theme.spacing.compact)
                         .background(Color.red)
                         .clipShape(Capsule())
-                        .padding(8)
+                        .padding(theme.spacing.small)
                         .accessibilityLabel("Currently live")
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: theme.cornerRadius.small,
+                    style: .continuous
+                )
+            )
 
             Text(stream.title)
-                .font(.subheadline.weight(.semibold))
+                .font(theme.typography.emphasis)
                 .lineLimit(2)
                 .frame(width: 200, alignment: .leading)
         }
-        .padding(10)
-        .background(HomeUIColor.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .padding(theme.cardPadding)
+        .background(theme.cardBackgroundColor)
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: theme.cornerRadius.medium,
+                style: .continuous
+            )
+        )
         .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(stream.isLive ? "Live: \(stream.title)" : stream.title))

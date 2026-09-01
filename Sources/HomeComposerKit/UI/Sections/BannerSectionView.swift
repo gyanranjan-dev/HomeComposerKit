@@ -5,6 +5,7 @@ public struct BannerSectionView: View {
     let section: ComposedHomeSection
 
     @Environment(\.homeActionHandler) private var actionHandler
+    @Environment(\.homeComposerTheme) private var theme
 
     public init(section: ComposedHomeSection) {
         self.section = section
@@ -44,7 +45,7 @@ public struct BannerSectionView: View {
         case .carousel:
             if banners.count == 1, let banner = banners.first {
                 bannerCard(banner)
-                    .padding(.horizontal)
+                    .padding(.horizontal, theme.horizontalContentPadding)
                     .frame(height: 200)
             } else {
                 HomeSectionItemsLayoutView(
@@ -133,22 +134,22 @@ public struct BannerSectionView: View {
                 endPoint: .bottom
             )
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: theme.spacing.compact + 2) {
                 if let title = banner.title {
                     Text(title)
-                        .font(.title2.bold())
+                        .font(theme.typography.sectionTitle)
                         .foregroundStyle(.white)
                 }
                 if let subtitle = banner.subtitle {
                     Text(subtitle)
-                        .font(.subheadline)
+                        .font(theme.typography.body)
                         .foregroundStyle(.white.opacity(0.9))
                 }
                 if let actionTitle = banner.action?.title {
                     Text(actionTitle)
-                        .font(.caption.weight(.semibold))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                        .font(theme.typography.caption.weight(.semibold))
+                        .padding(.horizontal, theme.spacing.medium)
+                        .padding(.vertical, theme.spacing.compact + 2)
                         .background(.white.opacity(0.92))
                         .foregroundStyle(.primary)
                         .clipShape(Capsule())
@@ -156,9 +157,14 @@ public struct BannerSectionView: View {
                         .accessibilityHidden(true)
                 }
             }
-            .padding(16)
+            .padding(theme.spacing.large)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: theme.cornerRadius.large,
+                style: .continuous
+            )
+        )
         .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
     }
 
@@ -169,14 +175,18 @@ public struct BannerSectionView: View {
     }
 
     private var emptyPlaceholder: some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .fill(HomeUIColor.placeholderBackground)
+        RoundedRectangle(
+            cornerRadius: theme.cornerRadius.large,
+            style: .continuous
+        )
+            .fill(theme.placeholderBackgroundColor)
             .frame(height: 160)
             .overlay {
                 Text("No banners")
+                    .font(theme.typography.body)
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal)
+            .padding(.horizontal, theme.horizontalContentPadding)
             .accessibilityLabel("No banners available")
     }
 }
