@@ -1,47 +1,25 @@
 import SwiftUI
 
-/// Loads a remote image with loading and failure placeholders.
+/// Loads an image through the injected ``HomeImageProvider``.
 struct RemoteImageView: View {
-    let url: URL?
+    let source: HomeImageSource
     var contentMode: ContentMode = .fill
 
-    @Environment(\.homeComposerTheme) private var theme
+    @Environment(\.homeImageProvider) private var imageProvider
 
-    var body: some View {
-        Group {
-            if let url {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: contentMode)
-                    case .failure:
-                        placeholder
-                    case .empty:
-                        ZStack {
-                            theme.placeholderBackgroundColor
-                            ProgressView()
-                        }
-                    @unknown default:
-                        placeholder
-                    }
-                }
-            } else {
-                placeholder
-            }
-        }
-        .accessibilityHidden(url == nil)
+    init(url: URL?, contentMode: ContentMode = .fill) {
+        self.source = HomeImageSource(url: url)
+        self.contentMode = contentMode
     }
 
-    private var placeholder: some View {
-        ZStack {
-            theme.placeholderBackgroundColor
-            Image(systemName: "photo")
-                .font(.title2)
-                .foregroundStyle(.secondary)
-                .accessibilityHidden(true)
-        }
+    init(source: HomeImageSource, contentMode: ContentMode = .fill) {
+        self.source = source
+        self.contentMode = contentMode
+    }
+
+    var body: some View {
+        imageProvider.image(for: source, contentMode: contentMode)
+            .accessibilityHidden(source == .none)
     }
 }
 
