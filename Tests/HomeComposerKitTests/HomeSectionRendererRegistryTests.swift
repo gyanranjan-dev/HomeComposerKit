@@ -13,15 +13,17 @@ final class HomeSectionRendererRegistryTests: XCTestCase {
         XCTAssertTrue(registry.isRegistered(for: .products))
         XCTAssertTrue(registry.isRegistered(for: .popularProducts))
         XCTAssertTrue(registry.isRegistered(for: .favoriteProducts))
+        XCTAssertTrue(registry.isRegistered(for: .recentlyViewed))
+        XCTAssertTrue(registry.isRegistered(for: .recommendations))
+        XCTAssertTrue(registry.isRegistered(for: .brand))
+        XCTAssertTrue(registry.isRegistered(for: .promotion))
         XCTAssertTrue(registry.isRegistered(for: .liveStream))
         XCTAssertTrue(registry.isRegistered(for: .social))
     }
 
-    func testDefaultRegistryDoesNotRegisterUnsupportedTypes() {
+    func testDefaultRegistryDoesNotRegisterCustomType() {
         let registry = HomeSectionRendererRegistry.makeDefault()
 
-        XCTAssertFalse(registry.isRegistered(for: .recentlyViewed))
-        XCTAssertFalse(registry.isRegistered(for: .recommendations))
         XCTAssertFalse(registry.isRegistered(for: .custom))
     }
 

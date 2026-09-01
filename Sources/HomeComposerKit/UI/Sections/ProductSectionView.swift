@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Product strip used for products, popular products, and favorites.
+/// Product strip used for products, popular products, favorites,
+/// recently viewed, and recommendations.
 public struct ProductSectionView: View {
     let section: ComposedHomeSection
 
@@ -16,7 +17,9 @@ public struct ProductSectionView: View {
         switch section.content {
         case .products(let payload),
              .popularProducts(let payload),
-             .favoriteProducts(let payload):
+             .favoriteProducts(let payload),
+             .recentlyViewed(let payload),
+             .recommendations(let payload):
             items = payload.products
         default:
             items = []

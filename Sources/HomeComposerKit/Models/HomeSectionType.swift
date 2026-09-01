@@ -15,6 +15,8 @@ public enum HomeSectionType: Codable, Sendable, Hashable {
     case social
     case recentlyViewed
     case recommendations
+    case brand
+    case promotion
     case custom
     /// A section type sent by the backend that this package version does not recognize.
     case unknown(String)
@@ -31,6 +33,8 @@ public enum HomeSectionType: Codable, Sendable, Hashable {
         case .social: return "social"
         case .recentlyViewed: return "recentlyViewed"
         case .recommendations: return "recommendations"
+        case .brand: return "brand"
+        case .promotion: return "promotion"
         case .custom: return "custom"
         case .unknown(let value): return value
         }
@@ -65,8 +69,10 @@ public enum HomeSectionType: Codable, Sendable, Hashable {
         case "favoriteProducts": return .favoriteProducts
         case "liveStream": return .liveStream
         case "social": return .social
-        case "recentlyViewed": return .recentlyViewed
+        case "recentlyViewed", "recently_viewed": return .recentlyViewed
         case "recommendations": return .recommendations
+        case "brand": return .brand
+        case "promotion": return .promotion
         case "custom": return .custom
         default: return .unknown(raw)
         }

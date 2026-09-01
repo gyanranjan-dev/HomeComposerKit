@@ -203,4 +203,38 @@ extension HomeAction {
         guard let action = banner.action else { return nil }
         return from(bannerAction: action, bannerID: banner.id)
     }
+
+    /// Maps a ``Brand`` tap into a ``HomeAction``.
+    public static func from(brand: Brand) -> HomeAction {
+        .custom(
+            name: "brand",
+            payload: [
+                "id": .string(brand.id),
+                "name": .string(brand.name)
+            ]
+        )
+    }
+
+    /// Maps a ``PromotionAction`` into a ``HomeAction``.
+    public static func from(promotionAction: PromotionAction, promotionID: String) -> HomeAction {
+        if promotionAction.destination.lowercased().hasPrefix("http://")
+            || promotionAction.destination.lowercased().hasPrefix("https://") {
+            return .openURL(url: promotionAction.destination)
+        }
+
+        var payload: [String: HomeActionValue] = [
+            "destination": .string(promotionAction.destination),
+            "promotionID": .string(promotionID)
+        ]
+        if let title = promotionAction.title {
+            payload["title"] = .string(title)
+        }
+        return .custom(name: "promotion", payload: payload)
+    }
+
+    /// Maps a ``Promotion`` tap into a ``HomeAction`` when promotion action data exists.
+    public static func from(promotion: Promotion) -> HomeAction? {
+        guard let action = promotion.action else { return nil }
+        return from(promotionAction: action, promotionID: promotion.id)
+    }
 }

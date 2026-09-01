@@ -33,8 +33,6 @@ final class RendererFallbackTests: XCTestCase {
     func testKnownTypesWithoutBuiltInRenderersFallBackSafely() {
         let registry = HomeSectionRendererRegistry.makeDefault()
         let unregisteredBuiltIns: [HomeSectionType] = [
-            .recentlyViewed,
-            .recommendations,
             .custom
         ]
 

@@ -10,6 +10,10 @@ public enum HomeSectionContent: Sendable, Equatable {
     case products(ProductSection)
     case favoriteProducts(ProductSection)
     case popularProducts(ProductSection)
+    case recentlyViewed(ProductSection)
+    case recommendations(ProductSection)
+    case brand(BrandSection)
+    case promotion(PromotionSection)
     case live(LiveSection)
     case social(SocialSection)
 }

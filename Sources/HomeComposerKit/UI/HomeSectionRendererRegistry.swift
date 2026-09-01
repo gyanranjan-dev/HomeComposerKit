@@ -5,7 +5,8 @@ import SwiftUI
 /// ## Built-in renderers
 ///
 /// ``makeDefault()`` and ``default`` provide built-in renderers for standard
-/// section types such as `.banner`, `.products`, and `.categories`.
+/// section types such as `.banner`, `.products`, `.recentlyViewed`, `.brand`,
+/// and `.promotion`.
 ///
 /// ## Custom renderer registration
 ///
@@ -157,6 +158,10 @@ public struct HomeSectionRendererRegistry {
         register(.products) { ProductSectionView(section: $0) }
         register(.popularProducts) { ProductSectionView(section: $0) }
         register(.favoriteProducts) { ProductSectionView(section: $0) }
+        register(.recentlyViewed) { ProductSectionView(section: $0) }
+        register(.recommendations) { ProductSectionView(section: $0) }
+        register(.brand) { BrandSectionView(section: $0) }
+        register(.promotion) { PromotionSectionView(section: $0) }
         register(.liveStream) { LiveSectionView(section: $0) }
         register(.social) { SocialSectionView(section: $0) }
     }

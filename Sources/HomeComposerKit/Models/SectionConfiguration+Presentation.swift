@@ -9,7 +9,8 @@ extension SectionConfiguration {
         case .banner:
             return .carousel
         case .categories, .products, .popularProducts, .favoriteProducts,
-             .liveStream, .social, .recentlyViewed, .recommendations, .custom:
+             .recentlyViewed, .recommendations, .brand, .promotion,
+             .liveStream, .social, .custom:
             return .horizontal
         case .unknown:
             return .horizontal

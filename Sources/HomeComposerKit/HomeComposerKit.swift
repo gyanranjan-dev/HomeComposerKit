@@ -24,6 +24,8 @@
 //       ↓
 //   Transformation    (HomeSectionContentTransformerPipeline — host enrichment)
 //       ↓
+//   Personalization   (HomePersonalizationContext — host-provided opaque signals)
+//       ↓
 //   Actions           (HomeAction — host interprets user interactions)
 //       ↓
 //   Theme             (HomeComposerTheme — host-customizable visual styling)
@@ -31,11 +33,15 @@
 //   Content           (HomeImageProvider / HomeContentProvider — host loading)
 //       ↓
 //   SwiftUI Rendering (HomeComposerView + HomeSectionRendererRegistry)
-//                     Host extensions via HomeSectionRendering registration
+//                     Built-in catalog: banner, categories, products, popular,
+//                     favorites, recently viewed, recommendations, brand,
+//                     promotion, live, social
+//                     Custom sections: host registration via HomeSectionRendering
 //                     Unregistered renderers → EmptyView (safe fallback)
 //
 // HomeComposerKit does not perform networking or authentication.
 // HomeComposerKit does not provide an AI vendor implementation.
 // HomeComposerKit does not download images; hosts supply HomeImageProvider.
+// HomeComposerKit does not collect or store personalization data.
 // The host application supplies HomeAIProvider; the SDK validates structured output.
 // Backend configuration changes must not crash an existing host app.
