@@ -40,6 +40,7 @@ public struct HomeComposerView: View {
     private let rendererRegistry: HomeSectionRendererRegistry
     private let actionHandler: HomeActionHandler
     private let theme: HomeComposerTheme
+    private let transformationPipeline: HomeSectionContentTransformerPipeline
 
     /// Creates a home page view.
     ///
@@ -49,6 +50,7 @@ public struct HomeComposerView: View {
     ///   - composer: Composer used to produce ordered renderable sections.
     ///   - rendererRegistry: Section renderer mappings. Defaults to built-in renderers.
     ///   - theme: Visual theme for built-in section renderers. Defaults to ``HomeComposerTheme/default``.
+    ///   - transformationPipeline: Optional post-composition content transformers.
     ///   - onAction: Optional host callback for user interactions. When omitted,
     ///     interactions are safely ignored.
     public init(
@@ -57,6 +59,7 @@ public struct HomeComposerView: View {
         composer: HomeComposer = HomeComposer(),
         rendererRegistry: HomeSectionRendererRegistry = .makeDefault(),
         theme: HomeComposerTheme = .default,
+        transformationPipeline: HomeSectionContentTransformerPipeline = .identity,
         onAction: ((HomeAction) -> Void)? = nil
     ) {
         self.homePage = homePage
@@ -64,6 +67,7 @@ public struct HomeComposerView: View {
         self.composer = composer
         self.rendererRegistry = rendererRegistry
         self.theme = theme
+        self.transformationPipeline = transformationPipeline
         self.actionHandler = onAction.map(HomeActionHandler.init) ?? .noop
     }
 
@@ -79,6 +83,7 @@ public struct HomeComposerView: View {
         composer: HomeComposer = HomeComposer(),
         rendererRegistry: HomeSectionRendererRegistry = .makeDefault(),
         theme: HomeComposerTheme = .default,
+        transformationPipeline: HomeSectionContentTransformerPipeline = .identity,
         onAction: ((HomeAction) -> Void)? = nil
     ) {
         self.init(
@@ -87,14 +92,21 @@ public struct HomeComposerView: View {
             composer: composer,
             rendererRegistry: rendererRegistry,
             theme: theme,
+            transformationPipeline: transformationPipeline,
             onAction: onAction
         )
     }
 
     public var body: some View {
+        let renderContext = HomeRenderContext(
+            homePage: homePage,
+            contentBySectionID: contentBySectionID
+        )
         let sections = composer.compose(
             homePage,
-            contentBySectionID: contentBySectionID
+            contentBySectionID: contentBySectionID,
+            transformationPipeline: transformationPipeline,
+            context: renderContext
         )
 
         ScrollView {
@@ -116,6 +128,7 @@ public struct HomeComposerView: View {
         .background(theme.backgroundColor)
         .homeComposerTheme(theme)
         .homeActionHandler(actionHandler)
+        .homeSectionContentTransformerPipeline(transformationPipeline)
     }
 }
 

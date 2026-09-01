@@ -61,12 +61,15 @@ public struct HomeRenderContext: Sendable {
     /// context) into ``HomeComposerView``.
     public func compose(
         using composer: HomeComposer = HomeComposer(),
-        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter(),
+        transformationPipeline: HomeSectionContentTransformerPipeline = .identity
     ) -> [ComposedHomeSection] {
         composer.compose(
             homePage,
             contentBySectionID: contentBySectionID,
-            diagnosticReporter: diagnosticReporter
+            diagnosticReporter: diagnosticReporter,
+            transformationPipeline: transformationPipeline,
+            context: self
         )
     }
 }

@@ -8,6 +8,10 @@ private struct HomeContentProviderKey: EnvironmentKey {
     static let defaultValue = HomeContentProvider.unavailable
 }
 
+private struct HomeSectionContentTransformerPipelineKey: EnvironmentKey {
+    static let defaultValue = HomeSectionContentTransformerPipeline.identity
+}
+
 extension EnvironmentValues {
     /// Image provider used by built-in HomeComposerKit views.
     public var homeImageProvider: HomeImageProvider {
@@ -20,6 +24,12 @@ extension EnvironmentValues {
         get { self[HomeContentProviderKey.self] }
         set { self[HomeContentProviderKey.self] = newValue }
     }
+
+    /// Content transformation pipeline applied before rendering composed sections.
+    public var homeSectionContentTransformerPipeline: HomeSectionContentTransformerPipeline {
+        get { self[HomeSectionContentTransformerPipelineKey.self] }
+        set { self[HomeSectionContentTransformerPipelineKey.self] = newValue }
+    }
 }
 
 extension View {
@@ -31,5 +41,12 @@ extension View {
     /// Installs a host content provider for descendant HomeComposerKit views.
     public func homeContentProvider(_ provider: HomeContentProvider) -> some View {
         environment(\.homeContentProvider, provider)
+    }
+
+    /// Installs a content transformation pipeline for descendant HomeComposerKit views.
+    public func homeSectionContentTransformerPipeline(
+        _ pipeline: HomeSectionContentTransformerPipeline
+    ) -> some View {
+        environment(\.homeSectionContentTransformerPipeline, pipeline)
     }
 }

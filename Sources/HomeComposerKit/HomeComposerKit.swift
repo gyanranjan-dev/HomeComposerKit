@@ -22,6 +22,8 @@
 //       ↓
 //   Composition       (HomeComposer — skips invalid/disabled; keeps ordering)
 //       ↓
+//   Transformation    (HomeSectionContentTransformerPipeline — host enrichment)
+//       ↓
 //   Actions           (HomeAction — host interprets user interactions)
 //       ↓
 //   Theme             (HomeComposerTheme — host-customizable visual styling)

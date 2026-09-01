@@ -20,9 +20,31 @@ public struct HomeComposer: Sendable {
     ///   - homePage: The configured home page to compose.
     ///   - contentBySectionID: Optional section payloads keyed by section `id`.
     ///   - diagnosticReporter: Optional host reporter for skipped/invalid sections.
+    ///   - transformationPipeline: Optional post-composition content transformers.
+    ///   - context: Optional render context passed to transformers.
     /// - Returns: Safely filtered sections sorted by `order`. When two sections share
     ///   the same order, their relative position from the original API array is preserved.
     public func compose(
+        _ homePage: HomePage,
+        contentBySectionID: [String: HomeSectionContent] = [:],
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter(),
+        transformationPipeline: HomeSectionContentTransformerPipeline = .identity,
+        context: HomeRenderContext? = nil
+    ) -> [ComposedHomeSection] {
+        let composed = composeSections(
+            homePage,
+            contentBySectionID: contentBySectionID,
+            diagnosticReporter: diagnosticReporter
+        )
+
+        return transformationPipeline.apply(to: composed, context: context)
+    }
+
+    /// Composes sections without applying a transformation pipeline.
+    ///
+    /// Existing callers that only need composition can continue using this method
+    /// for identical behavior to pre-transformation releases.
+    public func composeSections(
         _ homePage: HomePage,
         contentBySectionID: [String: HomeSectionContent] = [:],
         diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
