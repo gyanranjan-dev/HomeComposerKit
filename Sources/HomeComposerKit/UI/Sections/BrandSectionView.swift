@@ -31,13 +31,10 @@ public struct BrandSectionView: View {
                     : nil
             )
 
-            if brands.isEmpty {
-                Text("No brands")
-                    .font(theme.typography.body)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, theme.horizontalContentPadding)
-                    .accessibilityLabel("No brands available")
-            } else {
+            HomeSectionBuiltInContent.emptyOrContent(
+                isEmpty: brands.isEmpty,
+                sectionType: section.type
+            ) {
                 HomeSectionItemsLayoutView(
                     layout: section.effectiveLayout,
                     spacing: section.effectiveSpacing,

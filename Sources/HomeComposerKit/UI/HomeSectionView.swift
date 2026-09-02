@@ -14,7 +14,13 @@ public struct HomeSectionView: View {
     }
 
     public var body: some View {
-        HomeSectionRenderer.view(for: section, in: registry)
-            .accessibilityElement(children: .contain)
+        HomeSectionStateView(
+            sectionID: section.id,
+            sectionType: section.type,
+            sectionTitle: section.title
+        ) {
+            HomeSectionRenderer.view(for: section, in: registry)
+        }
+        .accessibilityElement(children: .contain)
     }
 }

@@ -31,9 +31,10 @@ public struct BannerSectionView: View {
                     : nil
             )
 
-            if banners.isEmpty {
-                emptyPlaceholder
-            } else {
+            HomeSectionBuiltInContent.emptyOrContent(
+                isEmpty: banners.isEmpty,
+                sectionType: section.type
+            ) {
                 bannerContent
             }
         }
@@ -172,21 +173,5 @@ public struct BannerSectionView: View {
         [banner.title, banner.subtitle, banner.action?.title]
             .compactMap { $0 }
             .joined(separator: ", ")
-    }
-
-    private var emptyPlaceholder: some View {
-        RoundedRectangle(
-            cornerRadius: theme.cornerRadius.large,
-            style: .continuous
-        )
-            .fill(theme.placeholderBackgroundColor)
-            .frame(height: 160)
-            .overlay {
-                Text("No banners")
-                    .font(theme.typography.body)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, theme.horizontalContentPadding)
-            .accessibilityLabel("No banners available")
     }
 }

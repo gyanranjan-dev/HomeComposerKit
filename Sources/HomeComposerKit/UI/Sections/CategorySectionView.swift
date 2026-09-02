@@ -31,13 +31,10 @@ public struct CategorySectionView: View {
                     : nil
             )
 
-            if categories.isEmpty {
-                Text("No categories")
-                    .font(theme.typography.body)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, theme.horizontalContentPadding)
-                    .accessibilityLabel("No categories available")
-            } else {
+            HomeSectionBuiltInContent.emptyOrContent(
+                isEmpty: categories.isEmpty,
+                sectionType: section.type
+            ) {
                 HomeSectionItemsLayoutView(
                     layout: section.effectiveLayout,
                     spacing: section.effectiveSpacing,

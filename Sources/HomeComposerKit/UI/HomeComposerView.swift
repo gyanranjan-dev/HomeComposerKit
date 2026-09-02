@@ -42,6 +42,8 @@ public struct HomeComposerView: View {
     private let theme: HomeComposerTheme
     private let transformationPipeline: HomeSectionContentTransformerPipeline
     private let personalizationContext: HomePersonalizationContext
+    private let sectionStates: [String: HomeSectionState]
+    private let sectionStateConfiguration: HomeSectionStateConfiguration
 
     /// Creates a home page view.
     ///
@@ -53,6 +55,8 @@ public struct HomeComposerView: View {
     ///   - theme: Visual theme for built-in section renderers. Defaults to ``HomeComposerTheme/default``.
     ///   - transformationPipeline: Optional post-composition content transformers.
     ///   - personalizationContext: Optional host personalization signals for transformers.
+    ///   - sectionStates: Optional host-provided presentation states keyed by section `id`.
+    ///   - sectionStateConfiguration: Customizable loading, empty, and error presentation.
     ///   - onAction: Optional host callback for user interactions. When omitted,
     ///     interactions are safely ignored.
     public init(
@@ -63,6 +67,8 @@ public struct HomeComposerView: View {
         theme: HomeComposerTheme = .default,
         transformationPipeline: HomeSectionContentTransformerPipeline = .identity,
         personalizationContext: HomePersonalizationContext = .empty,
+        sectionStates: [String: HomeSectionState] = [:],
+        sectionStateConfiguration: HomeSectionStateConfiguration = .default,
         onAction: ((HomeAction) -> Void)? = nil
     ) {
         self.homePage = homePage
@@ -72,6 +78,8 @@ public struct HomeComposerView: View {
         self.theme = theme
         self.transformationPipeline = transformationPipeline
         self.personalizationContext = personalizationContext
+        self.sectionStates = sectionStates
+        self.sectionStateConfiguration = sectionStateConfiguration
         self.actionHandler = onAction.map(HomeActionHandler.init) ?? .noop
     }
 
@@ -89,6 +97,8 @@ public struct HomeComposerView: View {
         theme: HomeComposerTheme = .default,
         transformationPipeline: HomeSectionContentTransformerPipeline = .identity,
         personalizationContext: HomePersonalizationContext = .empty,
+        sectionStates: [String: HomeSectionState] = [:],
+        sectionStateConfiguration: HomeSectionStateConfiguration = .default,
         onAction: ((HomeAction) -> Void)? = nil
     ) {
         self.init(
@@ -99,6 +109,8 @@ public struct HomeComposerView: View {
             theme: theme,
             transformationPipeline: transformationPipeline,
             personalizationContext: personalizationContext,
+            sectionStates: sectionStates,
+            sectionStateConfiguration: sectionStateConfiguration,
             onAction: onAction
         )
     }
@@ -137,6 +149,8 @@ public struct HomeComposerView: View {
         .homeActionHandler(actionHandler)
         .homeSectionContentTransformerPipeline(transformationPipeline)
         .homePersonalizationContext(personalizationContext)
+        .homeSectionStates(sectionStates)
+        .homeSectionStateConfiguration(sectionStateConfiguration)
     }
 }
 

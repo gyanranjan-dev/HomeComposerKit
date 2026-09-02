@@ -31,9 +31,10 @@ public struct PromotionSectionView: View {
                     : nil
             )
 
-            if promotions.isEmpty {
-                emptyPlaceholder
-            } else {
+            HomeSectionBuiltInContent.emptyOrContent(
+                isEmpty: promotions.isEmpty,
+                sectionType: section.type
+            ) {
                 promotionContent
             }
         }
@@ -122,21 +123,5 @@ public struct PromotionSectionView: View {
         [promotion.title, promotion.subtitle, promotion.action?.title]
             .compactMap { $0 }
             .joined(separator: ", ")
-    }
-
-    private var emptyPlaceholder: some View {
-        RoundedRectangle(
-            cornerRadius: theme.cornerRadius.large,
-            style: .continuous
-        )
-            .fill(theme.placeholderBackgroundColor)
-            .frame(height: 120)
-            .overlay {
-                Text("No promotions")
-                    .font(theme.typography.body)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, theme.horizontalContentPadding)
-            .accessibilityLabel("No promotions available")
     }
 }

@@ -31,13 +31,10 @@ public struct LiveSectionView: View {
                     : nil
             )
 
-            if streams.isEmpty {
-                Text("No live streams")
-                    .font(theme.typography.body)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, theme.horizontalContentPadding)
-                    .accessibilityLabel("No live streams available")
-            } else {
+            HomeSectionBuiltInContent.emptyOrContent(
+                isEmpty: streams.isEmpty,
+                sectionType: section.type
+            ) {
                 HomeSectionItemsLayoutView(
                     layout: section.effectiveLayout,
                     spacing: section.effectiveSpacing,

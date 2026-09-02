@@ -42,13 +42,10 @@ public struct ProductSectionView: View {
                     : nil
             )
 
-            if products.isEmpty {
-                Text("No products")
-                    .font(theme.typography.body)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, theme.horizontalContentPadding)
-                    .accessibilityLabel("No products available")
-            } else {
+            HomeSectionBuiltInContent.emptyOrContent(
+                isEmpty: products.isEmpty,
+                sectionType: section.type
+            ) {
                 HomeSectionItemsLayoutView(
                     layout: section.effectiveLayout,
                     spacing: section.effectiveSpacing,

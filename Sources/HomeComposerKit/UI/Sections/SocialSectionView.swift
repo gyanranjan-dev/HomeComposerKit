@@ -31,13 +31,10 @@ public struct SocialSectionView: View {
                     : nil
             )
 
-            if posts.isEmpty {
-                Text("No posts")
-                    .font(theme.typography.body)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, theme.horizontalContentPadding)
-                    .accessibilityLabel("No social posts available")
-            } else {
+            HomeSectionBuiltInContent.emptyOrContent(
+                isEmpty: posts.isEmpty,
+                sectionType: section.type
+            ) {
                 HomeSectionItemsLayoutView(
                     layout: section.effectiveLayout,
                     spacing: section.effectiveSpacing,
