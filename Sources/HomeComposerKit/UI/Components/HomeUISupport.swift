@@ -25,11 +25,15 @@ struct RemoteImageView: View {
 
 /// Formats a decimal price for display.
 enum ProductPriceFormatter {
-    static func string(price: Decimal, currency: String) -> String {
+    private static let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
-        formatter.currencyCode = currency
-        return formatter.string(from: price as NSDecimalNumber) ?? "\(currency) \(price)"
+        return formatter
+    }()
+
+    static func string(price: Decimal, currency: String) -> String {
+        currencyFormatter.currencyCode = currency
+        return currencyFormatter.string(from: price as NSDecimalNumber) ?? "\(currency) \(price)"
     }
 }
 
@@ -134,7 +138,7 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
     }
 
     private var verticalLayout: some View {
-        VStack(spacing: spacing) {
+        LazyVStack(spacing: spacing) {
             ForEach(items) { item in
                 itemContent(item)
                     .frame(maxWidth: .infinity, alignment: .leading)

@@ -49,7 +49,7 @@ public struct HomePersonalizationTransformer: HomeSectionContentTransforming, Se
 
         switch strategy {
         case .filterMatchingProducts:
-            let filtered = products.filter { allowed.contains($0.id) }
+            let filtered = filterProducts(products, allowed: allowed)
             return replaceProducts(filtered, in: section)
 
         case .reorderByRecommendations:
@@ -58,7 +58,7 @@ public struct HomePersonalizationTransformer: HomeSectionContentTransforming, Se
             return replaceProducts(ordered, in: section)
 
         case .hideWhenNoMatches:
-            let matched = products.filter { allowed.contains($0.id) }
+            let matched = filterProducts(products, allowed: allowed)
             if matched.isEmpty {
                 return .hidden
             }
@@ -116,5 +116,12 @@ public struct HomePersonalizationTransformer: HomeSectionContentTransforming, Se
             }
             return lhs.id < rhs.id
         }
+    }
+
+    private func filterProducts(_ products: [Product], allowed: Set<String>) -> [Product] {
+        guard !allowed.isEmpty else {
+            return []
+        }
+        return products.filter { allowed.contains($0.id) }
     }
 }

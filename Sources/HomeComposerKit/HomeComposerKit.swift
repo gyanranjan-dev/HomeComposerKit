@@ -36,6 +36,8 @@
 //       ↓
 //   Accessibility     (Dynamic Type, VoiceOver labels, adaptive layout)
 //       ↓
+//   Performance       (lazy rendering, stable IDs, deterministic pipelines)
+//       ↓
 //   SwiftUI Rendering (HomeComposerView + HomeSectionRendererRegistry)
 //                     Built-in catalog: banner, categories, products, popular,
 //                     favorites, recently viewed, recommendations, brand,
@@ -50,5 +52,7 @@
 // HomeComposerKit does not perform section data loading; hosts supply section state.
 // Section loading, empty, and error UI are presentation-only; retry uses HomeAction.
 // Built-in views support Dynamic Type; custom renderers own their accessibility.
+// Stable section/model IDs and lazy containers improve SwiftUI diff performance.
+// The framework intentionally avoids global caches; pipelines remain deterministic.
 // The host application supplies HomeAIProvider; the SDK validates structured output.
 // Backend configuration changes must not crash an existing host app.

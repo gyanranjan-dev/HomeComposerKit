@@ -104,6 +104,10 @@ public struct HomeSectionContentTransformerPipeline: Sendable {
         to section: ComposedHomeSection,
         context: HomeSectionTransformationContext
     ) -> ComposedHomeSection? {
+        guard hasTransformers else {
+            return section
+        }
+
         var current = section
 
         for transformer in transformers {
@@ -118,6 +122,11 @@ public struct HomeSectionContentTransformerPipeline: Sendable {
         }
 
         return current
+    }
+
+    /// Whether this pipeline contains any transformers.
+    public var hasTransformers: Bool {
+        !transformers.isEmpty
     }
 
     /// Applies the pipeline using a render context and optional personalization.
@@ -140,7 +149,7 @@ public struct HomeSectionContentTransformerPipeline: Sendable {
         to sections: [ComposedHomeSection],
         context: HomeSectionTransformationContext
     ) -> [ComposedHomeSection] {
-        sections.compactMap { apply(to: $0, context: context) }
+        HomeRenderingPerformance.applyPipeline(self, to: sections, context: context)
     }
 
     /// Applies the pipeline to composed sections using render context and personalization.

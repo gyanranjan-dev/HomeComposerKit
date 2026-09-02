@@ -147,8 +147,10 @@ public struct HomeSectionRendererRegistry {
         if let renderer = renderers[section.type] {
             return renderer(section)
         }
-        return AnyView(EmptyView())
+        return Self.unregisteredView
     }
+
+    private static let unregisteredView = AnyView(EmptyView())
 
     // MARK: - Built-ins
 

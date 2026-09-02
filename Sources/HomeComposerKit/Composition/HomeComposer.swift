@@ -39,6 +39,10 @@ public struct HomeComposer: Sendable {
             diagnosticReporter: diagnosticReporter
         )
 
+        guard transformationPipeline.hasTransformers else {
+            return composed
+        }
+
         return transformationPipeline.apply(
             to: composed,
             context: context,
@@ -56,91 +60,95 @@ public struct HomeComposer: Sendable {
         diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) -> [ComposedHomeSection] {
         var seenIDs = Set<String>()
+        seenIDs.reserveCapacity(min(homePage.sections.count, 64))
 
-        return homePage.sections
-            .enumerated()
-            .compactMap { index, section -> (offset: Int, element: HomeSection)? in
-                let trimmedID = section.id.trimmingCharacters(in: .whitespacesAndNewlines)
+        var accepted: [(offset: Int, element: HomeSection)] = []
+        accepted.reserveCapacity(homePage.sections.count)
 
-                guard section.isEnabled else {
-                    return nil
-                }
+        for (index, section) in homePage.sections.enumerated() {
+            let trimmedID = section.id.trimmingCharacters(in: .whitespacesAndNewlines)
 
-                guard !trimmedID.isEmpty else {
-                    diagnosticReporter.report(
-                        HomeDiagnostic(
-                            severity: .error,
-                            code: .emptySectionID,
-                            message: "Skipping section with empty id during composition.",
-                            sectionID: section.id
-                        )
-                    )
-                    return nil
-                }
-
-                if seenIDs.contains(trimmedID) {
-                    diagnosticReporter.report(
-                        HomeDiagnostic(
-                            severity: .error,
-                            code: .duplicateSectionID,
-                            message: "Skipping duplicate section id '\(trimmedID)' during composition.",
-                            sectionID: trimmedID
-                        )
-                    )
-                    return nil
-                }
-
-                if section.order < 0 {
-                    diagnosticReporter.report(
-                        HomeDiagnostic(
-                            severity: .error,
-                            code: .invalidSectionPosition,
-                            message: "Skipping section with invalid order \(section.order).",
-                            sectionID: section.id
-                        )
-                    )
-                    return nil
-                }
-
-                if let configuration = section.configuration,
-                   hasInvalidConfiguration(configuration) {
-                    diagnosticReporter.report(
-                        HomeDiagnostic(
-                            severity: .error,
-                            code: .invalidSectionConfiguration,
-                            message: "Skipping section with invalid configuration values.",
-                            sectionID: section.id
-                        )
-                    )
-                    return nil
-                }
-
-                if !section.type.isKnown {
-                    diagnosticReporter.report(
-                        HomeDiagnostic(
-                            severity: .warning,
-                            code: .unsupportedSectionType,
-                            message: "Composing unsupported section type '\(section.type.rawValue)'.",
-                            sectionID: section.id
-                        )
-                    )
-                }
-
-                seenIDs.insert(trimmedID)
-                return (offset: index, element: section)
+            guard section.isEnabled else {
+                continue
             }
-            .sorted { lhs, rhs in
-                if lhs.element.order != rhs.element.order {
-                    return lhs.element.order < rhs.element.order
-                }
-                return lhs.offset < rhs.offset
+
+            guard !trimmedID.isEmpty else {
+                diagnosticReporter.report(
+                    HomeDiagnostic(
+                        severity: .error,
+                        code: .emptySectionID,
+                        message: "Skipping section with empty id during composition.",
+                        sectionID: section.id
+                    )
+                )
+                continue
             }
-            .map { _, section in
-                ComposedHomeSection(
-                    section: section,
-                    content: contentBySectionID[section.id]
+
+            if seenIDs.contains(trimmedID) {
+                diagnosticReporter.report(
+                    HomeDiagnostic(
+                        severity: .error,
+                        code: .duplicateSectionID,
+                        message: "Skipping duplicate section id '\(trimmedID)' during composition.",
+                        sectionID: trimmedID
+                    )
+                )
+                continue
+            }
+
+            if section.order < 0 {
+                diagnosticReporter.report(
+                    HomeDiagnostic(
+                        severity: .error,
+                        code: .invalidSectionPosition,
+                        message: "Skipping section with invalid order \(section.order).",
+                        sectionID: section.id
+                    )
+                )
+                continue
+            }
+
+            if let configuration = section.configuration,
+               hasInvalidConfiguration(configuration) {
+                diagnosticReporter.report(
+                    HomeDiagnostic(
+                        severity: .error,
+                        code: .invalidSectionConfiguration,
+                        message: "Skipping section with invalid configuration values.",
+                        sectionID: section.id
+                    )
+                )
+                continue
+            }
+
+            if !section.type.isKnown {
+                diagnosticReporter.report(
+                    HomeDiagnostic(
+                        severity: .warning,
+                        code: .unsupportedSectionType,
+                        message: "Composing unsupported section type '\(section.type.rawValue)'.",
+                        sectionID: section.id
+                    )
                 )
             }
+
+            seenIDs.insert(trimmedID)
+            accepted.append((offset: index, element: section))
+        }
+
+        accepted.sort { lhs, rhs in
+            if lhs.element.order != rhs.element.order {
+                return lhs.element.order < rhs.element.order
+            }
+            return lhs.offset < rhs.offset
+        }
+
+        return accepted.map { _, section in
+            ComposedHomeSection(
+                section: section,
+                content: contentBySectionID[section.id]
+            )
+        }
     }
 
     private func hasInvalidConfiguration(_ configuration: SectionConfiguration) -> Bool {

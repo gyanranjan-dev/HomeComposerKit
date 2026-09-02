@@ -38,6 +38,13 @@ import SwiftUI
 /// content. Explicit ``SectionConfiguration/columns`` values are always respected;
 /// when columns are omitted, grid layouts adapt to available width. Custom host
 /// renderers are responsible for their own accessibility semantics.
+///
+/// ## Performance
+///
+/// Large pages use ``LazyVStack`` for section lists and lazy item layouts inside
+/// sections. Stable section and model IDs help SwiftUI diff efficiently. The
+/// framework avoids global caches; identity transformation pipelines short-circuit
+/// without per-section work.
 public struct HomeComposerView: View {
 
     public let homePage: HomePage
@@ -123,15 +130,13 @@ public struct HomeComposerView: View {
     }
 
     public var body: some View {
-        let renderContext = HomeRenderContext(
-            homePage: homePage,
-            contentBySectionID: contentBySectionID
-        )
         let sections = composer.compose(
             homePage,
             contentBySectionID: contentBySectionID,
             transformationPipeline: transformationPipeline,
-            context: renderContext,
+            context: transformationPipeline.hasTransformers
+                ? HomeRenderContext(homePage: homePage, contentBySectionID: contentBySectionID)
+                : nil,
             personalization: personalizationContext
         )
 
