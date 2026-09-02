@@ -18,12 +18,14 @@ struct HomeSectionHeaderView: View {
                         Text(title)
                             .font(theme.typography.sectionTitle)
                             .foregroundStyle(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
                             .accessibilityAddTraits(.isHeader)
                     }
                     if let subtitle, !subtitle.isEmpty {
                         Text(subtitle)
                             .font(theme.typography.body)
                             .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
 
@@ -34,6 +36,7 @@ struct HomeSectionHeaderView: View {
                         onSeeAll?()
                     }
                     .font(theme.typography.emphasis)
+                    .accessibilityLabel("See all items")
                     .accessibilityHint("Shows more items in this section")
                 }
             }

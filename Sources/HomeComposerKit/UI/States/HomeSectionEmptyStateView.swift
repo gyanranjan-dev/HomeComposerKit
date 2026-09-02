@@ -17,11 +17,14 @@ public struct HomeSectionEmptyStateView: View {
             Text(configuration.title)
                 .font(theme.typography.body)
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isStaticText)
 
             if let message = configuration.message {
                 Text(message)
                     .font(theme.typography.caption)
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             if let actionTitle = configuration.actionTitle,
@@ -35,14 +38,16 @@ public struct HomeSectionEmptyStateView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, theme.horizontalContentPadding)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(accessibilityLabel)
+        .accessibilityElement(children: hasAction ? .contain : .combine)
+        .accessibilityLabel(
+            HomeAccessibilityLabels.emptyState(
+                title: configuration.title,
+                message: configuration.message
+            )
+        )
     }
 
-    private var accessibilityLabel: String {
-        if let message = configuration.message {
-            return "\(configuration.title). \(message)"
-        }
-        return configuration.title
+    private var hasAction: Bool {
+        configuration.actionTitle != nil && configuration.action != nil
     }
 }

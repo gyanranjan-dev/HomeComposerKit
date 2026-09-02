@@ -6,6 +6,7 @@ public struct BannerSectionView: View {
 
     @Environment(\.homeActionHandler) private var actionHandler
     @Environment(\.homeComposerTheme) private var theme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     public init(section: ComposedHomeSection) {
         self.section = section
@@ -18,6 +19,10 @@ public struct BannerSectionView: View {
             return Array(items.prefix(limit))
         }
         return items
+    }
+
+    private var bannerHeight: CGFloat {
+        HomeAdaptiveLayout.bannerHeight(dynamicTypeSize: dynamicTypeSize)
     }
 
     public var body: some View {
@@ -47,14 +52,14 @@ public struct BannerSectionView: View {
             if banners.count == 1, let banner = banners.first {
                 bannerCard(banner)
                     .padding(.horizontal, theme.horizontalContentPadding)
-                    .frame(height: 200)
+                    .frame(minHeight: bannerHeight)
             } else {
                 HomeSectionItemsLayoutView(
                     layout: .carousel,
                     spacing: section.effectiveSpacing,
                     columns: 1,
                     items: banners,
-                    carouselHeight: 200
+                    carouselHeight: bannerHeight
                 ) { banner in
                     bannerCard(banner)
                 }
@@ -67,9 +72,9 @@ public struct BannerSectionView: View {
                 items: banners
             ) { banner in
                 bannerCard(banner)
-                    .frame(width: 480, height: 200)
+                    .frame(minHeight: bannerHeight)
             }
-            .frame(height: 200)
+            .frame(minHeight: bannerHeight)
         case .vertical:
             HomeSectionItemsLayoutView(
                 layout: .vertical,
@@ -78,17 +83,18 @@ public struct BannerSectionView: View {
                 items: banners
             ) { banner in
                 bannerCard(banner)
-                    .frame(height: 200)
+                    .frame(minHeight: bannerHeight)
             }
         case .grid:
             HomeSectionItemsLayoutView(
                 layout: .grid,
                 spacing: section.effectiveSpacing,
-                columns: section.effectiveColumns(default: 1),
+                configuredColumns: section.configuredGridColumns,
+                defaultColumns: 1,
                 items: banners
             ) { banner in
                 bannerCard(banner)
-                    .frame(height: 160)
+                    .frame(minHeight: bannerHeight * 0.8)
             }
         case .unknown:
             HomeSectionItemsLayoutView(
@@ -96,7 +102,7 @@ public struct BannerSectionView: View {
                 spacing: section.effectiveSpacing,
                 columns: 1,
                 items: banners,
-                carouselHeight: 200
+                carouselHeight: bannerHeight
             ) { banner in
                 bannerCard(banner)
             }
@@ -114,12 +120,13 @@ public struct BannerSectionView: View {
                 card
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(Text(accessibilityLabel(for: banner)))
+            .accessibilityLabel(Text(HomeAccessibilityLabels.banner(banner)))
+            .accessibilityHint("Opens banner action")
             .accessibilityAddTraits(.isButton)
         } else {
             card
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel(Text(accessibilityLabel(for: banner)))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(HomeAccessibilityLabels.banner(banner)))
         }
     }
 
@@ -128,23 +135,27 @@ public struct BannerSectionView: View {
             RemoteImageView(url: banner.imageURL)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
+                .accessibilityHidden(true)
 
             LinearGradient(
                 colors: [.clear, .black.opacity(0.55)],
                 startPoint: .center,
                 endPoint: .bottom
             )
+            .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: theme.spacing.compact + 2) {
                 if let title = banner.title {
                     Text(title)
                         .font(theme.typography.sectionTitle)
                         .foregroundStyle(.white)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 if let subtitle = banner.subtitle {
                     Text(subtitle)
                         .font(theme.typography.body)
                         .foregroundStyle(.white.opacity(0.9))
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 if let actionTitle = banner.action?.title {
                     Text(actionTitle)
@@ -159,6 +170,7 @@ public struct BannerSectionView: View {
                 }
             }
             .padding(theme.spacing.large)
+            .accessibilityHidden(true)
         }
         .clipShape(
             RoundedRectangle(
@@ -167,11 +179,5 @@ public struct BannerSectionView: View {
             )
         )
         .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
-    }
-
-    private func accessibilityLabel(for banner: Banner) -> String {
-        [banner.title, banner.subtitle, banner.action?.title]
-            .compactMap { $0 }
-            .joined(separator: ", ")
     }
 }

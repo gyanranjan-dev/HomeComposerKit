@@ -6,6 +6,7 @@ public struct PromotionSectionView: View {
 
     @Environment(\.homeActionHandler) private var actionHandler
     @Environment(\.homeComposerTheme) private var theme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     public init(section: ComposedHomeSection) {
         self.section = section
@@ -45,11 +46,11 @@ public struct PromotionSectionView: View {
         HomeSectionItemsLayoutView(
             layout: section.effectiveLayout,
             spacing: section.effectiveSpacing,
-            columns: section.effectiveColumns(default: 1),
+            configuredColumns: section.configuredGridColumns,
+            defaultColumns: 1,
             items: promotions
         ) { promotion in
             promotionCard(promotion)
-                .frame(height: section.effectiveLayout == .horizontal ? 160 : nil)
         }
     }
 
@@ -64,12 +65,13 @@ public struct PromotionSectionView: View {
                 card
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(Text(accessibilityLabel(for: promotion)))
+            .accessibilityLabel(Text(HomeAccessibilityLabels.promotion(promotion)))
+            .accessibilityHint("Opens promotion")
             .accessibilityAddTraits(.isButton)
         } else {
             card
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel(Text(accessibilityLabel(for: promotion)))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(HomeAccessibilityLabels.promotion(promotion)))
         }
     }
 
@@ -91,21 +93,25 @@ public struct PromotionSectionView: View {
                 Text(promotion.title)
                     .font(theme.typography.sectionTitle)
                     .foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 if let subtitle = promotion.subtitle {
                     Text(subtitle)
                         .font(theme.typography.body)
                         .foregroundStyle(.secondary)
-                        .lineLimit(2)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 4 : 2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 if let actionTitle = promotion.action?.title {
                     Text(actionTitle)
                         .font(theme.typography.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityHidden(true)
         }
         .padding(theme.spacing.medium)
         .background(theme.cardBackgroundColor)
@@ -117,11 +123,5 @@ public struct PromotionSectionView: View {
         )
         .shadow(color: .black.opacity(0.05), radius: 4, y: 1)
         .padding(.horizontal, theme.horizontalContentPadding)
-    }
-
-    private func accessibilityLabel(for promotion: Promotion) -> String {
-        [promotion.title, promotion.subtitle, promotion.action?.title]
-            .compactMap { $0 }
-            .joined(separator: ", ")
     }
 }

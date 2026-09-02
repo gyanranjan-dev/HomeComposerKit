@@ -6,6 +6,11 @@ struct ProductCardView: View {
     var onTap: (() -> Void)? = nil
 
     @Environment(\.homeComposerTheme) private var theme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var imageDimension: CGFloat {
+        dynamicTypeSize.isAccessibilitySize ? 168 : 148
+    }
 
     var body: some View {
         Group {
@@ -23,7 +28,8 @@ struct ProductCardView: View {
     private var cardContent: some View {
         VStack(alignment: .leading, spacing: theme.cardSpacing) {
             RemoteImageView(url: product.imageURL)
-                .frame(width: 148, height: 148)
+                .aspectRatio(1, contentMode: .fill)
+                .frame(maxWidth: imageDimension, minHeight: imageDimension, maxHeight: imageDimension)
                 .clipShape(
                     RoundedRectangle(
                         cornerRadius: theme.cornerRadius.small,
@@ -35,23 +41,22 @@ struct ProductCardView: View {
             Text(product.name)
                 .font(theme.typography.emphasis)
                 .foregroundStyle(.primary)
-                .lineLimit(2)
-                .frame(width: 148, alignment: .leading)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
 
             Text(ProductPriceFormatter.string(price: product.price, currency: product.currency))
                 .font(theme.typography.price)
                 .foregroundStyle(.secondary)
-                .accessibilityLabel(
-                    Text("Price \(ProductPriceFormatter.string(price: product.price, currency: product.currency))")
-                )
 
             if product.isFavorite {
                 Label("Favorite", systemImage: "heart.fill")
                     .font(theme.typography.caption)
                     .foregroundStyle(.pink)
-                    .accessibilityLabel("Marked as favorite")
+                    .accessibilityHidden(true)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(theme.cardPadding)
         .background(theme.cardBackgroundColor)
         .clipShape(
@@ -61,8 +66,21 @@ struct ProductCardView: View {
             )
         )
         .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text(product.name))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(HomeAccessibilityLabels.product(product)))
         .accessibilityAddTraits(onTap == nil ? [] : .isButton)
+        .modifier(ProductCardAccessibilityHint(hasAction: onTap != nil))
+    }
+}
+
+private struct ProductCardAccessibilityHint: ViewModifier {
+    let hasAction: Bool
+
+    func body(content: Content) -> some View {
+        if hasAction {
+            content.accessibilityHint("Opens product details")
+        } else {
+            content
+        }
     }
 }

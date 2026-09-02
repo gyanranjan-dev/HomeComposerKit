@@ -31,6 +31,13 @@ import SwiftUI
 /// ```swift
 /// HomeComposerView(homePage: page, theme: .default)
 /// ```
+///
+/// ## Accessibility
+///
+/// Built-in views support Dynamic Type and derive VoiceOver labels from section
+/// content. Explicit ``SectionConfiguration/columns`` values are always respected;
+/// when columns are omitted, grid layouts adapt to available width. Custom host
+/// renderers are responsible for their own accessibility semantics.
 public struct HomeComposerView: View {
 
     public let homePage: HomePage

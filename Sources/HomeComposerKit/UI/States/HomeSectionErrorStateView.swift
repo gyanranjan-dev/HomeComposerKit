@@ -25,10 +25,12 @@ public struct HomeSectionErrorStateView: View {
             Text(configuration.title)
                 .font(theme.typography.body.weight(.semibold))
                 .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
 
             Text(displayMessage)
                 .font(theme.typography.caption)
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
 
             if let retryTitle = configuration.retryTitle,
                let retryAction = configuration.retryAction {
@@ -37,23 +39,26 @@ public struct HomeSectionErrorStateView: View {
                 }
                 .font(theme.typography.caption.weight(.semibold))
                 .accessibilityLabel(retryTitle)
+                .accessibilityHint("Retries loading this section")
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, theme.horizontalContentPadding)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(accessibilityLabel)
+        .accessibilityElement(children: hasRetry ? .contain : .combine)
+        .accessibilityLabel(
+            HomeAccessibilityLabels.errorState(
+                title: configuration.title,
+                message: displayMessage,
+                retryTitle: configuration.retryTitle
+            )
+        )
     }
 
     private var displayMessage: String {
         configuration.message ?? failure.message
     }
 
-    private var accessibilityLabel: String {
-        var parts = [configuration.title, displayMessage]
-        if let retryTitle = configuration.retryTitle {
-            parts.append(retryTitle)
-        }
-        return parts.joined(separator: ". ")
+    private var hasRetry: Bool {
+        configuration.retryTitle != nil && configuration.retryAction != nil
     }
 }

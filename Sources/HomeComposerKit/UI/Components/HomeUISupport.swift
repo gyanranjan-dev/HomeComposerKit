@@ -37,13 +37,35 @@ enum ProductPriceFormatter {
 struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
     let layout: HomeSectionLayout
     let spacing: CGFloat
-    let columns: Int
+    let configuredColumns: Int?
+    let defaultColumns: Int
     let items: [Item]
     let carouselHeight: CGFloat?
     let itemContent: (Item) -> ItemContent
 
     @Environment(\.homeComposerTheme) private var theme
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    init(
+        layout: HomeSectionLayout,
+        spacing: CGFloat,
+        configuredColumns: Int?,
+        defaultColumns: Int,
+        items: [Item],
+        carouselHeight: CGFloat? = nil,
+        @ViewBuilder itemContent: @escaping (Item) -> ItemContent
+    ) {
+        self.layout = layout
+        self.spacing = spacing
+        self.configuredColumns = configuredColumns
+        self.defaultColumns = defaultColumns
+        self.items = items
+        self.carouselHeight = carouselHeight
+        self.itemContent = itemContent
+    }
+
+    /// Creates a layout view with an explicit fixed column count.
     init(
         layout: HomeSectionLayout,
         spacing: CGFloat,
@@ -52,12 +74,28 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
         carouselHeight: CGFloat? = nil,
         @ViewBuilder itemContent: @escaping (Item) -> ItemContent
     ) {
-        self.layout = layout
-        self.spacing = spacing
-        self.columns = columns
-        self.items = items
-        self.carouselHeight = carouselHeight
-        self.itemContent = itemContent
+        self.init(
+            layout: layout,
+            spacing: spacing,
+            configuredColumns: columns,
+            defaultColumns: columns,
+            items: items,
+            carouselHeight: carouselHeight,
+            itemContent: itemContent
+        )
+    }
+
+    private var resolvedColumns: Int {
+        HomeAdaptiveLayout.gridColumnCount(
+            configuredColumns: configuredColumns,
+            defaultColumns: defaultColumns,
+            horizontalSizeClass: horizontalSizeClass,
+            dynamicTypeSize: dynamicTypeSize
+        )
+    }
+
+    private var resolvedCarouselHeight: CGFloat {
+        carouselHeight ?? HomeAdaptiveLayout.bannerHeight(dynamicTypeSize: dynamicTypeSize)
     }
 
     var body: some View {
@@ -81,9 +119,14 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
 
     private var horizontalLayout: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: spacing) {
+            LazyHStack(alignment: .top, spacing: spacing) {
                 ForEach(items) { item in
                     itemContent(item)
+                        .frame(
+                            minWidth: HomeAdaptiveLayout.horizontalItemMinWidth(
+                                dynamicTypeSize: dynamicTypeSize
+                            )
+                        )
                 }
             }
             .padding(.horizontal, theme.horizontalContentPadding)
@@ -94,6 +137,7 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
         VStack(spacing: spacing) {
             ForEach(items) { item in
                 itemContent(item)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(.horizontal, theme.horizontalContentPadding)
@@ -103,12 +147,13 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
         LazyVGrid(
             columns: Array(
                 repeating: GridItem(.flexible(), spacing: spacing),
-                count: max(columns, 1)
+                count: resolvedColumns
             ),
             spacing: spacing
         ) {
             ForEach(items) { item in
                 itemContent(item)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(.horizontal, theme.horizontalContentPadding)
@@ -124,7 +169,7 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
             }
         }
         .tabViewStyle(.page(indexDisplayMode: items.count > 1 ? .automatic : .never))
-        .frame(height: carouselHeight)
+        .frame(height: resolvedCarouselHeight)
         #else
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack(spacing: spacing) {
@@ -134,7 +179,7 @@ struct HomeSectionItemsLayoutView<Item: Identifiable, ItemContent: View>: View {
             }
             .padding(.horizontal, theme.horizontalContentPadding)
         }
-        .frame(height: carouselHeight)
+        .frame(height: resolvedCarouselHeight)
         #endif
     }
 }

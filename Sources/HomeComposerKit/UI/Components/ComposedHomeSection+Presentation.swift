@@ -29,4 +29,8 @@ extension ComposedHomeSection {
     func effectiveColumns(default defaultValue: Int = 2) -> Int {
         presentationConfiguration.effectiveColumns(default: defaultValue)
     }
+
+    var configuredGridColumns: Int? {
+        configuration?.columns
+    }
 }

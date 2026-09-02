@@ -6,6 +6,7 @@ public struct SocialSectionView: View {
 
     @Environment(\.homeActionHandler) private var actionHandler
     @Environment(\.homeComposerTheme) private var theme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     public init(section: ComposedHomeSection) {
         self.section = section
@@ -38,7 +39,8 @@ public struct SocialSectionView: View {
                 HomeSectionItemsLayoutView(
                     layout: section.effectiveLayout,
                     spacing: section.effectiveSpacing,
-                    columns: section.effectiveColumns(default: 2),
+                    configuredColumns: section.configuredGridColumns,
+                    defaultColumns: 2,
                     items: posts,
                     carouselHeight: 220
                 ) { post in
@@ -51,13 +53,15 @@ public struct SocialSectionView: View {
     private func socialCard(_ post: SocialPost) -> some View {
         VStack(alignment: .leading, spacing: theme.cardSpacing) {
             RemoteImageView(url: post.imageURL)
-                .frame(width: 180, height: 140)
+                .aspectRatio(4 / 3, contentMode: .fill)
+                .frame(maxWidth: .infinity, minHeight: 120, maxHeight: 160)
                 .clipShape(
                     RoundedRectangle(
                         cornerRadius: theme.cornerRadius.small,
                         style: .continuous
                     )
                 )
+                .accessibilityHidden(true)
 
             Text(post.author)
                 .font(theme.typography.caption.weight(.semibold))
@@ -66,8 +70,9 @@ public struct SocialSectionView: View {
             if let content = post.content {
                 Text(content)
                     .font(theme.typography.body)
-                    .lineLimit(3)
-                    .frame(width: 180, alignment: .leading)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 4 : 3)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(theme.cardPadding)
@@ -79,14 +84,7 @@ public struct SocialSectionView: View {
             )
         )
         .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text(accessibilityLabel(for: post)))
-    }
-
-    private func accessibilityLabel(for post: SocialPost) -> String {
-        if let content = post.content {
-            return "\(post.author): \(content)"
-        }
-        return post.author
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(HomeAccessibilityLabels.socialPost(post)))
     }
 }

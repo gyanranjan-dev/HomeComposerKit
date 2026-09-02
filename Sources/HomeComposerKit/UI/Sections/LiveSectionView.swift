@@ -6,6 +6,7 @@ public struct LiveSectionView: View {
 
     @Environment(\.homeActionHandler) private var actionHandler
     @Environment(\.homeComposerTheme) private var theme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     public init(section: ComposedHomeSection) {
         self.section = section
@@ -38,7 +39,8 @@ public struct LiveSectionView: View {
                 HomeSectionItemsLayoutView(
                     layout: section.effectiveLayout,
                     spacing: section.effectiveSpacing,
-                    columns: section.effectiveColumns(default: 2),
+                    configuredColumns: section.configuredGridColumns,
+                    defaultColumns: 2,
                     items: streams,
                     carouselHeight: 160
                 ) { stream in
@@ -52,8 +54,10 @@ public struct LiveSectionView: View {
         VStack(alignment: .leading, spacing: theme.cardSpacing) {
             ZStack(alignment: .topLeading) {
                 RemoteImageView(url: stream.thumbnailURL)
-                    .frame(width: 200, height: 120)
+                    .aspectRatio(5 / 3, contentMode: .fill)
+                    .frame(maxWidth: .infinity, minHeight: 120, maxHeight: 140)
                     .clipped()
+                    .accessibilityHidden(true)
 
                 if stream.isLive {
                     Text("LIVE")
@@ -64,7 +68,7 @@ public struct LiveSectionView: View {
                         .background(Color.red)
                         .clipShape(Capsule())
                         .padding(theme.spacing.small)
-                        .accessibilityLabel("Currently live")
+                        .accessibilityHidden(true)
                 }
             }
             .clipShape(
@@ -76,8 +80,9 @@ public struct LiveSectionView: View {
 
             Text(stream.title)
                 .font(theme.typography.emphasis)
-                .lineLimit(2)
-                .frame(width: 200, alignment: .leading)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(theme.cardPadding)
         .background(theme.cardBackgroundColor)
@@ -88,7 +93,7 @@ public struct LiveSectionView: View {
             )
         )
         .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text(stream.isLive ? "Live: \(stream.title)" : stream.title))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(HomeAccessibilityLabels.liveStream(stream)))
     }
 }

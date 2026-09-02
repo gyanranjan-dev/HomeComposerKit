@@ -117,6 +117,7 @@ public struct HorizontalSectionSkeleton: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Loading")
+        .accessibilityAddTraits(.updatesFrequently)
     }
 }
 
@@ -159,6 +160,7 @@ public struct GridSectionSkeleton: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Loading")
+        .accessibilityAddTraits(.updatesFrequently)
     }
 }
 
@@ -179,5 +181,6 @@ public struct BannerSectionSkeleton: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Loading")
+        .accessibilityAddTraits(.updatesFrequently)
     }
 }

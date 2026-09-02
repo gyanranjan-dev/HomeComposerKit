@@ -49,7 +49,8 @@ public struct ProductSectionView: View {
                 HomeSectionItemsLayoutView(
                     layout: section.effectiveLayout,
                     spacing: section.effectiveSpacing,
-                    columns: section.effectiveColumns(default: 2),
+                    configuredColumns: section.configuredGridColumns,
+                    defaultColumns: 2,
                     items: products
                 ) { product in
                     ProductCardView(product: product) {
