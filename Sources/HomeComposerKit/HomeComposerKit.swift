@@ -17,6 +17,9 @@
 //   AI                (HomeAIConfigurationEngine — host-injected HomeAIProvider)
 //       ↓
 //   Diagnostics       (HomeComposerDiagnosticReporting — silent by default)
+//                       Local, in-process developer observability only.
+//                       Hosts inject a reporter; no persistence or transmission.
+//                       Avoid sensitive identifiers in custom metadata.
 //       ↓
 //   Integration       (HomeRenderContextBuilder / HomePageProviding)
 //       ↓

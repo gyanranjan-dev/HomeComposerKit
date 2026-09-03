@@ -5,6 +5,8 @@ public struct HomeSectionView: View {
     public let section: ComposedHomeSection
     private let registry: HomeSectionRendererRegistry
 
+    @Environment(\.homeDiagnosticReporter) private var diagnosticReporter
+
     public init(
         section: ComposedHomeSection,
         registry: HomeSectionRendererRegistry = .makeDefault()
@@ -19,7 +21,11 @@ public struct HomeSectionView: View {
             sectionType: section.type,
             sectionTitle: section.title
         ) {
-            HomeSectionRenderer.view(for: section, in: registry)
+            HomeSectionRenderer.view(
+                for: section,
+                in: registry,
+                diagnosticReporter: diagnosticReporter
+            )
         }
         .accessibilityElement(children: .contain)
     }

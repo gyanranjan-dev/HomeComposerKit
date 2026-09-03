@@ -10,7 +10,8 @@ enum HomeRenderingPerformance {
     static func applyPipeline(
         _ pipeline: HomeSectionContentTransformerPipeline,
         to sections: [ComposedHomeSection],
-        context: HomeSectionTransformationContext
+        context: HomeSectionTransformationContext,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) -> [ComposedHomeSection] {
         guard pipeline.hasTransformers else {
             return sections
@@ -20,7 +21,11 @@ enum HomeRenderingPerformance {
         output.reserveCapacity(sections.count)
 
         for section in sections {
-            if let transformed = pipeline.apply(to: section, context: context) {
+            if let transformed = pipeline.apply(
+                to: section,
+                context: context,
+                diagnosticReporter: diagnosticReporter
+            ) {
                 output.append(transformed)
             }
         }

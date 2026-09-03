@@ -102,7 +102,8 @@ public struct HomeSectionContentTransformerPipeline: Sendable {
     /// - Returns: The transformed section, or `nil` when a transformer hides it.
     public func apply(
         to section: ComposedHomeSection,
-        context: HomeSectionTransformationContext
+        context: HomeSectionTransformationContext,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) -> ComposedHomeSection? {
         guard hasTransformers else {
             return section
@@ -115,8 +116,10 @@ public struct HomeSectionContentTransformerPipeline: Sendable {
             case .unchanged(let unchanged):
                 current = unchanged
             case .replace(let replacement):
+                diagnosticReporter.report(HomeDiagnosticFactory.sectionReplaced(section: current))
                 current = replacement
             case .hidden:
+                diagnosticReporter.report(HomeDiagnosticFactory.sectionHidden(section: current))
                 return nil
             }
         }
@@ -133,37 +136,47 @@ public struct HomeSectionContentTransformerPipeline: Sendable {
     public func apply(
         to section: ComposedHomeSection,
         context: HomeRenderContext? = nil,
-        personalization: HomePersonalizationContext = .empty
+        personalization: HomePersonalizationContext = .empty,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) -> ComposedHomeSection? {
         apply(
             to: section,
             context: HomeSectionTransformationContext(
                 renderContext: context,
                 personalization: personalization
-            )
+            ),
+            diagnosticReporter: diagnosticReporter
         )
     }
 
     /// Applies the pipeline to composed sections, preserving order.
     public func apply(
         to sections: [ComposedHomeSection],
-        context: HomeSectionTransformationContext
+        context: HomeSectionTransformationContext,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) -> [ComposedHomeSection] {
-        HomeRenderingPerformance.applyPipeline(self, to: sections, context: context)
+        HomeRenderingPerformance.applyPipeline(
+            self,
+            to: sections,
+            context: context,
+            diagnosticReporter: diagnosticReporter
+        )
     }
 
     /// Applies the pipeline to composed sections using render context and personalization.
     public func apply(
         to sections: [ComposedHomeSection],
         context: HomeRenderContext? = nil,
-        personalization: HomePersonalizationContext = .empty
+        personalization: HomePersonalizationContext = .empty,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter()
     ) -> [ComposedHomeSection] {
         apply(
             to: sections,
             context: HomeSectionTransformationContext(
                 renderContext: context,
                 personalization: personalization
-            )
+            ),
+            diagnosticReporter: diagnosticReporter
         )
     }
 }

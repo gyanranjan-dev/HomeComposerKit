@@ -46,7 +46,8 @@ public struct HomeComposer: Sendable {
         return transformationPipeline.apply(
             to: composed,
             context: context,
-            personalization: personalization
+            personalization: personalization,
+            diagnosticReporter: diagnosticReporter
         )
     }
 
@@ -78,7 +79,9 @@ public struct HomeComposer: Sendable {
                         severity: .error,
                         code: .emptySectionID,
                         message: "Skipping section with empty id during composition.",
-                        sectionID: section.id
+                        sectionID: section.id,
+                        category: .composition,
+                        sectionType: section.type
                     )
                 )
                 continue
@@ -90,7 +93,9 @@ public struct HomeComposer: Sendable {
                         severity: .error,
                         code: .duplicateSectionID,
                         message: "Skipping duplicate section id '\(trimmedID)' during composition.",
-                        sectionID: trimmedID
+                        sectionID: trimmedID,
+                        category: .composition,
+                        sectionType: section.type
                     )
                 )
                 continue
@@ -102,7 +107,9 @@ public struct HomeComposer: Sendable {
                         severity: .error,
                         code: .invalidSectionPosition,
                         message: "Skipping section with invalid order \(section.order).",
-                        sectionID: section.id
+                        sectionID: section.id,
+                        category: .composition,
+                        sectionType: section.type
                     )
                 )
                 continue
@@ -115,7 +122,9 @@ public struct HomeComposer: Sendable {
                         severity: .error,
                         code: .invalidSectionConfiguration,
                         message: "Skipping section with invalid configuration values.",
-                        sectionID: section.id
+                        sectionID: section.id,
+                        category: .composition,
+                        sectionType: section.type
                     )
                 )
                 continue
@@ -127,13 +136,22 @@ public struct HomeComposer: Sendable {
                         severity: .warning,
                         code: .unsupportedSectionType,
                         message: "Composing unsupported section type '\(section.type.rawValue)'.",
-                        sectionID: section.id
+                        sectionID: section.id,
+                        category: .composition,
+                        sectionType: section.type
                     )
                 )
             }
 
             seenIDs.insert(trimmedID)
             accepted.append((offset: index, element: section))
+
+            if contentBySectionID[section.id] == nil,
+               Self.expectsContent(for: section.type) {
+                diagnosticReporter.report(
+                    HomeDiagnosticFactory.missingSectionContent(section: section)
+                )
+            }
         }
 
         accepted.sort { lhs, rhs in
@@ -156,5 +174,15 @@ public struct HomeComposer: Sendable {
         if let columns = configuration.columns, columns < 0 { return true }
         if let spacing = configuration.spacing, spacing < 0 { return true }
         return false
+    }
+
+    private static func expectsContent(for type: HomeSectionType) -> Bool {
+        switch type {
+        case .banner, .categories, .products, .popularProducts, .favoriteProducts,
+             .recentlyViewed, .recommendations, .brand, .promotion, .liveStream, .social:
+            return true
+        case .custom, .unknown:
+            return false
+        }
     }
 }

@@ -59,7 +59,9 @@ public struct HomePageValidator: Sendable {
                         severity: .error,
                         code: .emptySectionID,
                         message: "Section id must not be empty.",
-                        sectionID: section.id
+                        sectionID: section.id,
+                        category: .validation,
+                        sectionType: section.type
                     )
                 )
             } else if seenIDs.contains(trimmedID) {
@@ -68,7 +70,9 @@ public struct HomePageValidator: Sendable {
                         severity: .error,
                         code: .duplicateSectionID,
                         message: "Duplicate section id '\(trimmedID)'.",
-                        sectionID: trimmedID
+                        sectionID: trimmedID,
+                        category: .validation,
+                        sectionType: section.type
                     )
                 )
             } else {
@@ -81,7 +85,9 @@ public struct HomePageValidator: Sendable {
                         severity: .error,
                         code: .invalidSectionPosition,
                         message: "Section order must be >= 0 (found \(section.order)).",
-                        sectionID: section.id
+                        sectionID: section.id,
+                        category: .validation,
+                        sectionType: section.type
                     )
                 )
             }
@@ -92,14 +98,16 @@ public struct HomePageValidator: Sendable {
                         severity: .warning,
                         code: .unsupportedSectionType,
                         message: "Unsupported section type '\(section.type.rawValue)'.",
-                        sectionID: section.id
+                        sectionID: section.id,
+                        category: .validation,
+                        sectionType: section.type
                     )
                 )
             }
 
             if let configuration = section.configuration {
                 diagnostics.append(
-                    contentsOf: validateConfiguration(configuration, sectionID: section.id)
+                    contentsOf: validateConfiguration(configuration, section: section)
                 )
             }
         }
@@ -109,7 +117,7 @@ public struct HomePageValidator: Sendable {
 
     private func validateConfiguration(
         _ configuration: SectionConfiguration,
-        sectionID: String
+        section: HomeSection
     ) -> [HomeDiagnostic] {
         var diagnostics: [HomeDiagnostic] = []
 
@@ -119,7 +127,9 @@ public struct HomePageValidator: Sendable {
                     severity: .error,
                     code: .invalidSectionConfiguration,
                     message: "Section configuration limit must be >= 0.",
-                    sectionID: sectionID
+                    sectionID: section.id,
+                    category: .configuration,
+                    sectionType: section.type
                 )
             )
         }
@@ -130,7 +140,9 @@ public struct HomePageValidator: Sendable {
                     severity: .error,
                     code: .invalidSectionConfiguration,
                     message: "Section configuration columns must be >= 0.",
-                    sectionID: sectionID
+                    sectionID: section.id,
+                    category: .configuration,
+                    sectionType: section.type
                 )
             )
         }
@@ -141,7 +153,9 @@ public struct HomePageValidator: Sendable {
                     severity: .error,
                     code: .invalidSectionConfiguration,
                     message: "Section configuration spacing must be >= 0.",
-                    sectionID: sectionID
+                    sectionID: section.id,
+                    category: .configuration,
+                    sectionType: section.type
                 )
             )
         }

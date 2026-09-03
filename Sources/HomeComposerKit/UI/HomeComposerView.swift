@@ -45,6 +45,14 @@ import SwiftUI
 /// sections. Stable section and model IDs help SwiftUI diff efficiently. The
 /// framework avoids global caches; identity transformation pipelines short-circuit
 /// without per-section work.
+///
+/// ## Diagnostics
+///
+/// Diagnostics are developer observability only — not analytics or telemetry.
+/// Pass a ``HomeComposerDiagnosticReporting`` implementation (or use
+/// ``CollectingHomeDiagnosticReporter`` in tests). Default is silent no-op.
+/// HomeComposerKit does not persist, transmit, or print diagnostics. Avoid
+/// sensitive user identifiers in custom metadata; the host owns reporter behavior.
 public struct HomeComposerView: View {
 
     public let homePage: HomePage
@@ -58,6 +66,7 @@ public struct HomeComposerView: View {
     private let personalizationContext: HomePersonalizationContext
     private let sectionStates: [String: HomeSectionState]
     private let sectionStateConfiguration: HomeSectionStateConfiguration
+    private let diagnosticReporter: any HomeComposerDiagnosticReporting
 
     /// Creates a home page view.
     ///
@@ -71,6 +80,8 @@ public struct HomeComposerView: View {
     ///   - personalizationContext: Optional host personalization signals for transformers.
     ///   - sectionStates: Optional host-provided presentation states keyed by section `id`.
     ///   - sectionStateConfiguration: Customizable loading, empty, and error presentation.
+    ///   - diagnosticReporter: Optional host reporter for composition, rendering,
+    ///     transformation, and state diagnostics. Defaults to silent no-op.
     ///   - onAction: Optional host callback for user interactions. When omitted,
     ///     interactions are safely ignored.
     public init(
@@ -83,6 +94,7 @@ public struct HomeComposerView: View {
         personalizationContext: HomePersonalizationContext = .empty,
         sectionStates: [String: HomeSectionState] = [:],
         sectionStateConfiguration: HomeSectionStateConfiguration = .default,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter(),
         onAction: ((HomeAction) -> Void)? = nil
     ) {
         self.homePage = homePage
@@ -94,6 +106,7 @@ public struct HomeComposerView: View {
         self.personalizationContext = personalizationContext
         self.sectionStates = sectionStates
         self.sectionStateConfiguration = sectionStateConfiguration
+        self.diagnosticReporter = diagnosticReporter
         self.actionHandler = onAction.map(HomeActionHandler.init) ?? .noop
     }
 
@@ -113,6 +126,7 @@ public struct HomeComposerView: View {
         personalizationContext: HomePersonalizationContext = .empty,
         sectionStates: [String: HomeSectionState] = [:],
         sectionStateConfiguration: HomeSectionStateConfiguration = .default,
+        diagnosticReporter: any HomeComposerDiagnosticReporting = NoOpHomeComposerDiagnosticReporter(),
         onAction: ((HomeAction) -> Void)? = nil
     ) {
         self.init(
@@ -125,6 +139,7 @@ public struct HomeComposerView: View {
             personalizationContext: personalizationContext,
             sectionStates: sectionStates,
             sectionStateConfiguration: sectionStateConfiguration,
+            diagnosticReporter: diagnosticReporter,
             onAction: onAction
         )
     }
@@ -133,6 +148,7 @@ public struct HomeComposerView: View {
         let sections = composer.compose(
             homePage,
             contentBySectionID: contentBySectionID,
+            diagnosticReporter: diagnosticReporter,
             transformationPipeline: transformationPipeline,
             context: transformationPipeline.hasTransformers
                 ? HomeRenderContext(homePage: homePage, contentBySectionID: contentBySectionID)
@@ -163,6 +179,14 @@ public struct HomeComposerView: View {
         .homePersonalizationContext(personalizationContext)
         .homeSectionStates(sectionStates)
         .homeSectionStateConfiguration(sectionStateConfiguration)
+        .homeDiagnosticReporter(diagnosticReporter)
+        .background {
+            HomeSectionStateDiagnosticObserver(
+                sectionStates: sectionStates,
+                sections: sections,
+                reporter: diagnosticReporter
+            )
+        }
     }
 }
 
