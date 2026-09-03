@@ -1,8 +1,29 @@
+# macOS
 .DS_Store
-/.build
+.AppleDouble
+.LSOverride
+
+# Swift Package Manager
+.build/
 /Packages
-xcuserdata/
 DerivedData/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Credentials
 .netrc
+
+# IDE
+.idea/
+*.swp
+*~
